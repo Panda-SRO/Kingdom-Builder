@@ -1,0 +1,20 @@
+Art assets in this folder:
+
+"Medieval RTS" pack by Kenney Vleugels (Kenney.nl)
+https://kenney.nl/assets/medieval-rts
+License: CC0 1.0 (Creative Commons Zero / public domain equivalent)
+Free for personal and commercial use. Attribution not required (but appreciated).
+
+Files used here (renamed for clarity):
+- buildings/castillo.png    <- medievalStructure_06.png
+- buildings/granja.png      <- medievalStructure_19.png
+- buildings/aserradero.png  <- medievalStructure_20.png
+- buildings/cuartel.png     <- medievalStructure_02.png
+- env/tree1.png             <- medievalEnvironment_01.png
+- env/tree2.png             <- medievalEnvironment_03.png
+- env/tree3.png             <- medievalEnvironment_04.png
+- env/rock1.png             <- medievalEnvironment_08.png
+- env/rock2.png             <- medievalEnvironment_10.png
+- env/clay1.png             <- medievalEnvironment_16.png
+- tiles/grass.png           <- medievalTile_57.png
+- tiles/farmland.png        <- medievalTile_45.png
