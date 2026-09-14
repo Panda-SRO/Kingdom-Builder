@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Kingdom Builder</title>
-<meta name="description" content="Kingdom Builder — prototipo de juego de construcción y gestión de un reino.">
+<meta name="description" content="Kingdom Builder — prototipo de juego de construcción y gestión de un reino, con mapa del mundo multijugador.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -21,6 +21,7 @@
     --gold-bright:#f0cb5a;
     --danger:#e0554b;
     --ok:#5aa96c;
+    --info:#5aa0d6;
     --res-gold:#f0cb5a;
     --res-wood:#c98a4b;
     --res-stone:#c3cad2;
@@ -45,6 +46,7 @@
   img{-webkit-user-drag:none;user-select:none;}
   ::selection{background:rgba(212,175,55,0.3);}
   .icon{width:1em;height:1em;display:inline-block;vertical-align:-0.15em;flex-shrink:0;}
+  [hidden]{display:none !important;}
 
   /* ---- topbar ---- */
   .topbar{
@@ -74,6 +76,24 @@
   .resource[data-res="gold"] .res-amount{color:var(--res-gold);}
   .resource[data-res="wood"] .res-amount{color:var(--res-wood);}
   .resource[data-res="stone"] .res-amount{color:var(--res-stone);}
+
+  /* ---- tabs ---- */
+  .tabbar{
+    position:sticky;top:57px;z-index:90;
+    display:flex;gap:8px;padding:10px 16px;
+    background:rgba(20,17,13,0.85);backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);
+    max-width:760px;margin:0 auto;
+  }
+  .tab-btn{
+    flex:1;display:flex;align-items:center;justify-content:center;gap:7px;
+    padding:10px 12px;border-radius:10px;border:1px solid var(--line);
+    background:var(--bg-panel);color:var(--muted);font-size:13.5px;font-weight:700;
+    cursor:pointer;transition:.15s ease;
+  }
+  .tab-btn .icon{width:16px;height:16px;}
+  .tab-btn.active{background:linear-gradient(180deg, rgba(212,175,55,0.22), rgba(212,175,55,0.08));border-color:rgba(212,175,55,0.5);color:var(--gold-bright);}
+  .tab-btn .dot{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 2px rgba(90,169,108,0.25);}
 
   /* ---- page ---- */
   .page{max-width:760px;margin:0 auto;padding:16px 16px 8px;}
@@ -142,6 +162,33 @@
     animation:dustBurst .55s ease-out forwards;}
   @keyframes dustBurst{0%{opacity:0.9;transform:translate(-50%,0) scale(1);}100%{opacity:0;transform:translate(calc(-50% + var(--dx)), var(--dy)) scale(0.4);}}
 
+  /* player markers on world map */
+  .player-marker{pointer-events:auto;cursor:pointer;}
+  .player-marker img{width:100%;}
+  .player-marker .label{
+    position:absolute;left:50%;bottom:calc(100% + 3px);transform:translateX(-50%);
+    display:flex;flex-direction:column;align-items:center;gap:1px;
+    white-space:nowrap;pointer-events:none;
+  }
+  .player-marker .pname{
+    background:rgba(20,17,13,0.85);border:1px solid rgba(212,175,55,0.4);border-radius:999px;
+    padding:2px 8px;font-size:10px;font-weight:700;color:var(--ink);
+  }
+  .player-marker .plevel{
+    background:rgba(212,175,55,0.16);border:1px solid rgba(212,175,55,0.4);border-radius:999px;
+    padding:0 6px;font-size:9.5px;font-weight:700;color:var(--gold-bright);
+  }
+  .player-marker.self .pname{background:rgba(90,160,214,0.85);border-color:rgba(90,160,214,0.7);color:#fff;}
+  .player-marker.self::before{
+    content:"";position:absolute;left:50%;bottom:2%;transform:translateX(-50%);
+    width:78%;aspect-ratio:1;border-radius:50%;
+    background:radial-gradient(circle, rgba(90,160,214,0.35), transparent 70%);
+    animation:pulseRing 2s ease-in-out infinite;
+  }
+  @keyframes pulseRing{0%,100%{opacity:0.6;transform:translateX(-50%) scale(0.9);}50%{opacity:1;transform:translateX(-50%) scale(1.08);}}
+  .player-marker.demo img{opacity:0.82;filter:grayscale(0.15) drop-shadow(0 5px 4px rgba(0,0,0,0.35));}
+  .player-marker.demo .pname{opacity:0.75;}
+
   /* zoom controls */
   .zoom-controls{position:absolute;right:10px;bottom:10px;z-index:20;display:flex;flex-direction:column;gap:8px;}
   .zoom-btn{
@@ -151,6 +198,7 @@
     cursor:pointer;user-select:none;
   }
   .zoom-btn:active{transform:scale(0.94);}
+  .zoom-btn.icon-btn img{width:18px;height:18px;}
   .hint{
     position:absolute;left:10px;bottom:10px;z-index:20;
     background:rgba(20,17,13,0.7);border:1px solid var(--line);border-radius:8px;
@@ -159,9 +207,17 @@
   }
   .hint.hide{opacity:0;}
 
+  .demo-banner{
+    display:flex;align-items:flex-start;gap:10px;
+    background:rgba(90,160,214,0.1);border:1px solid rgba(90,160,214,0.35);
+    border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:12.5px;color:#cfe4f4;line-height:1.5;
+  }
+  .demo-banner .icon{width:18px;height:18px;flex-shrink:0;margin-top:1px;color:var(--info);}
+  .demo-banner b{color:#fff;}
+
   .footer-note{
     max-width:760px;margin:16px auto 0;padding:0 16px;
-    display:flex;justify-content:center;
+    display:flex;justify-content:center;gap:14px;flex-wrap:wrap;
   }
   .reset-link{
     background:rgba(0,0,0,0.28);border:none;color:rgba(255,255,255,0.85);font-size:12px;
@@ -169,7 +225,7 @@
   }
   .reset-link:hover{color:var(--gold-bright);}
 
-  /* ---- sheet ---- */
+  /* ---- sheet (shared) ---- */
   .sheet-backdrop{
     position:fixed;inset:0;background:rgba(10,8,6,0.6);
     opacity:0;pointer-events:none;transition:opacity .2s ease;z-index:140;
@@ -238,6 +294,12 @@
   }
   .btn-upgrade.maxed{background:var(--bg-panel-2);color:var(--muted);cursor:default;}
 
+  /* ---- player info sheet ---- */
+  .player-sheet-body{margin-top:16px;display:flex;flex-direction:column;gap:10px;}
+  .player-stat-row{display:flex;justify-content:space-between;align-items:center;background:var(--bg-panel-2);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:13.5px;}
+  .player-stat-row span:first-child{color:var(--muted);}
+  .player-stat-row span:last-child{font-weight:700;}
+
   /* ---- toast ---- */
   .toast{
     position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(20px);
@@ -252,6 +314,69 @@
   .toast.error{border-color:rgba(224,85,75,0.5);color:#ffb3ac;}
   .toast.success{border-color:rgba(90,169,108,0.5);color:#a9e0b6;}
   .toast .icon{width:14px;height:14px;}
+
+  /* ---- name modal ---- */
+  .name-modal-backdrop{
+    position:fixed;inset:0;z-index:200;background:rgba(8,6,5,0.75);
+    display:flex;align-items:center;justify-content:center;padding:20px;
+  }
+  .name-modal{
+    width:100%;max-width:360px;background:var(--bg-panel);border:1px solid var(--line);
+    border-radius:18px;padding:26px 22px;text-align:center;
+    box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  }
+  .name-modal .icon-big{width:44px;height:44px;margin:0 auto 12px;color:var(--gold-bright);}
+  .name-modal h2{font-size:18px;color:#fff;margin-bottom:6px;}
+  .name-modal p{font-size:12.5px;color:var(--muted);margin-bottom:18px;line-height:1.5;}
+  .name-modal input{
+    width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--line);
+    background:var(--bg-panel-2);color:var(--ink);font-size:14.5px;text-align:center;margin-bottom:14px;
+  }
+  .name-modal input:focus{outline:2px solid var(--gold);outline-offset:1px;}
+  .name-modal .btn-upgrade{margin-top:0;}
+
+  /* ---- chat ---- */
+  .chat-toggle{
+    position:absolute;left:10px;top:10px;z-index:20;
+    display:flex;align-items:center;gap:7px;
+    background:rgba(20,17,13,0.85);border:1px solid var(--line);border-radius:999px;
+    padding:8px 14px 8px 10px;cursor:pointer;color:var(--ink);font-size:12.5px;font-weight:700;
+  }
+  .chat-toggle .icon{width:16px;height:16px;color:var(--gold-bright);}
+  .chat-toggle .badge{
+    background:var(--danger);color:#fff;border-radius:999px;min-width:16px;height:16px;
+    font-size:10px;display:flex;align-items:center;justify-content:center;padding:0 4px;
+  }
+  .chat-panel{
+    position:absolute;left:0;right:0;bottom:0;top:0;z-index:30;
+    background:rgba(15,13,10,0.94);backdrop-filter:blur(4px);
+    display:flex;flex-direction:column;
+    transform:translateY(100%);transition:transform .25s ease;
+  }
+  .chat-panel.open{transform:translateY(0);}
+  .chat-panel-header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:12px 14px;border-bottom:1px solid var(--line);
+  }
+  .chat-panel-header h3{font-size:14px;color:var(--gold-bright);}
+  .chat-close{width:28px;height:28px;border-radius:50%;background:var(--bg-panel-2);border:1px solid var(--line);color:var(--muted);cursor:pointer;}
+  .chat-messages{flex:1;overflow-y:auto;padding:10px 14px;display:flex;flex-direction:column;gap:8px;}
+  .chat-msg{font-size:12.5px;line-height:1.4;}
+  .chat-msg .who{font-weight:700;color:var(--gold-bright);margin-right:5px;}
+  .chat-msg.own .who{color:#8ec4ea;}
+  .chat-msg .txt{color:var(--ink);word-break:break-word;}
+  .chat-empty{color:var(--muted);font-size:12.5px;text-align:center;margin-top:20px;}
+  .chat-input-row{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--line);}
+  .chat-input-row input{
+    flex:1;padding:10px 12px;border-radius:10px;border:1px solid var(--line);
+    background:var(--bg-panel-2);color:var(--ink);font-size:13px;
+  }
+  .chat-input-row button{
+    padding:0 16px;border-radius:10px;border:none;background:var(--gold);color:#241b08;font-weight:700;cursor:pointer;font-size:13px;
+  }
+  .chat-input-row button:disabled{background:var(--stone);color:var(--muted);cursor:not-allowed;}
+
+  @media (min-width:520px){ .chat-panel{left:auto;width:320px;top:0;bottom:0;border-left:1px solid var(--line);} }
 </style>
 </head>
 <body>
@@ -278,6 +403,22 @@
       <rect x="10.3" y="14" width="3.4" height="7" fill="#8a5a2a" stroke="#5f666e" stroke-width="1"/>
       <path d="M8 10h2v2H8zM14 10h2v2h-2z" fill="#e07a4b"/>
     </symbol>
+    <symbol id="icon-map" viewBox="0 0 24 24">
+      <path d="M9 3L3 5v16l6-2 6 2 6-2V3l-6 2-6-2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M9 3v16M15 5v16" stroke="currentColor" stroke-width="1.6"/>
+    </symbol>
+    <symbol id="icon-chat" viewBox="0 0 24 24">
+      <path d="M4 5h16v11H8l-4 4V5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="icon-info" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icon-target" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <circle cx="12" cy="12" r="2.4" fill="currentColor"/>
+      <path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </symbol>
   </defs>
 </svg>
 
@@ -293,27 +434,82 @@
   </div>
 </header>
 
-<div class="page">
+<div class="tabbar">
+  <div class="tab-btn active" id="tab-reino" data-tab="reino">
+    <svg class="icon" aria-hidden="true"><use href="#icon-castle"/></svg> Tu Reino
+  </div>
+  <div class="tab-btn" id="tab-mapa" data-tab="mapa">
+    <svg class="icon" aria-hidden="true"><use href="#icon-map"/></svg> Mapa del Mundo
+    <span class="dot" id="conn-dot" hidden></span>
+  </div>
+</div>
+
+<!-- ============ TU REINO ============ -->
+<div class="page" id="page-reino">
   <div class="page-intro">
     <h1>Tu reino</h1>
     <p>Arrastra para moverte por el mapa, pellizca o usa +/− para hacer zoom. Toca un edificio para mejorarlo.</p>
   </div>
 
-  <div class="world-viewport" id="viewport">
-    <div class="world" id="world"></div>
+  <div class="world-viewport" id="viewport-reino">
+    <div class="world" id="world-reino"></div>
     <div class="zoom-controls">
-      <div class="zoom-btn" id="zoom-in" aria-label="Acercar">+</div>
-      <div class="zoom-btn" id="zoom-out" aria-label="Alejar">−</div>
-      <div class="zoom-btn" id="zoom-reset" aria-label="Centrar">⤢</div>
+      <div class="zoom-btn" id="zoom-in-reino" aria-label="Acercar">+</div>
+      <div class="zoom-btn" id="zoom-out-reino" aria-label="Alejar">−</div>
+      <div class="zoom-btn" id="zoom-reset-reino" aria-label="Centrar">⤢</div>
     </div>
-    <div class="hint" id="hint">Arrastra · Zoom con +/−</div>
+    <div class="hint" id="hint-reino">Arrastra · Zoom con +/−</div>
+  </div>
+
+  <div class="footer-note">
+    <button class="reset-link" id="reset-link">Reiniciar progreso</button>
   </div>
 </div>
 
-<div class="footer-note">
-  <button class="reset-link" id="reset-link">Reiniciar progreso</button>
+<!-- ============ MAPA DEL MUNDO ============ -->
+<div class="page" id="page-mapa" hidden>
+  <div class="page-intro">
+    <h1>Mapa del mundo</h1>
+    <p>Aquí ves los castillos de todos los jugadores conectados, en tiempo real.</p>
+  </div>
+
+  <div class="demo-banner" id="demo-banner" hidden>
+    <svg class="icon" aria-hidden="true"><use href="#icon-info"/></svg>
+    <span><b>Modo demostración.</b> Este mapa aún no está conectado a una base de datos real, así que solo ves castillos de ejemplo y el chat está desactivado. Conecta Firebase (ver <code>README.md</code>) para multijugador real.</span>
+  </div>
+
+  <div class="world-viewport" id="viewport-mapa">
+    <div class="world" id="world-mapa"></div>
+
+    <div class="chat-toggle" id="chat-toggle">
+      <svg class="icon" aria-hidden="true"><use href="#icon-chat"/></svg> Chat
+      <span class="badge" id="chat-badge" hidden>0</span>
+    </div>
+
+    <div class="zoom-controls">
+      <div class="zoom-btn" id="zoom-in-mapa" aria-label="Acercar">+</div>
+      <div class="zoom-btn" id="zoom-out-mapa" aria-label="Alejar">−</div>
+      <div class="zoom-btn" id="goto-self" aria-label="Ir a mi castillo"><svg class="icon" aria-hidden="true"><use href="#icon-target"/></svg></div>
+    </div>
+    <div class="hint" id="hint-mapa">Arrastra · Zoom con +/−</div>
+
+    <div class="chat-panel" id="chat-panel">
+      <div class="chat-panel-header">
+        <h3>Chat del reino</h3>
+        <button class="chat-close" id="chat-close" aria-label="Cerrar chat">✕</button>
+      </div>
+      <div class="chat-messages" id="chat-messages">
+        <div class="chat-empty" id="chat-empty">Aún no hay mensajes.</div>
+      </div>
+      <div class="chat-input-row">
+        <input type="text" id="chat-input" placeholder="Escribe un mensaje…" maxlength="240">
+        <button id="chat-send">Enviar</button>
+      </div>
+    </div>
+  </div>
 </div>
 
+<!-- ============ shared: building sheet ============ -->
 <div class="sheet-backdrop" id="sheet-backdrop"></div>
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-name">
   <div class="sheet-handle"></div>
@@ -334,13 +530,234 @@
   </div>
 </div>
 
+<!-- ============ player info sheet ============ -->
+<div class="sheet-backdrop" id="player-sheet-backdrop"></div>
+<div class="sheet" id="player-sheet" role="dialog" aria-modal="true">
+  <div class="sheet-handle"></div>
+  <div class="sheet-header">
+    <div class="sheet-icon-wrap"><img src="assets/buildings/castillo.png" alt=""></div>
+    <div>
+      <h2 id="player-sheet-name"></h2>
+      <div class="sheet-level" id="player-sheet-sub"></div>
+    </div>
+    <button class="sheet-close" id="player-sheet-close" aria-label="Cerrar">✕</button>
+  </div>
+  <div class="player-sheet-body" id="player-sheet-body"></div>
+</div>
+
+<!-- ============ name modal ============ -->
+<div class="name-modal-backdrop" id="name-modal-backdrop" hidden>
+  <div class="name-modal">
+    <svg class="icon-big" aria-hidden="true"><use href="#icon-castle"/></svg>
+    <h2>¿Cómo te llamas?</h2>
+    <p>Este nombre lo van a ver otros jugadores en el mapa del mundo y en el chat.</p>
+    <input type="text" id="name-input" placeholder="Tu nombre" maxlength="18">
+    <button class="btn-upgrade" id="name-confirm">Entrar al reino</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
+
+<!-- Firebase (solo se usa si firebaseConfig está configurado de verdad; ver README.md) -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
 <script>
 (function(){
   "use strict";
 
-  /* ===================== config ===================== */
+  /* ===================== Firebase config ===================== */
+  // Reemplaza este objeto por el de tu proyecto de Firebase (Configuración del
+  // proyecto → Tus apps → Web) para activar el multijugador real.
+  // Mientras tenga estos valores de ejemplo, el juego funciona en "modo demostración".
+  var firebaseConfig = {
+    apiKey: "PASTE_YOUR_API_KEY_HERE",
+    authDomain: "PASTE_YOUR_PROJECT.firebaseapp.com",
+    projectId: "PASTE_YOUR_PROJECT_ID",
+    storageBucket: "PASTE_YOUR_PROJECT.appspot.com",
+    messagingSenderId: "PASTE_YOUR_SENDER_ID",
+    appId: "PASTE_YOUR_APP_ID"
+  };
+
+  function isFirebaseConfigured(){
+    return firebaseConfig.apiKey && firebaseConfig.apiKey.indexOf("PASTE_") !== 0;
+  }
+
+  var FB_READY = isFirebaseConfigured() && typeof firebase !== "undefined";
+  var db = null, auth = null, currentUid = null;
+
+  if(FB_READY){
+    try{
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      auth = firebase.auth();
+    }catch(e){
+      console.error("Firebase init failed", e);
+      FB_READY = false;
+    }
+  }
+
+  /* ===================== shared helpers ===================== */
+  var RES_ICON_ID = { gold:"icon-gold", wood:"icon-wood", stone:"icon-stone" };
+  function fmt(n){ return Math.round(n).toLocaleString("es"); }
+
+  var toastTimer = null;
+  function showToast(msg, kind, html){
+    var toast = document.getElementById("toast");
+    if(html){ toast.innerHTML = html; } else { toast.textContent = msg; }
+    toast.className = "toast show" + (kind ? " " + kind : "");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toast.classList.remove("show"); }, 3200);
+  }
+
+  /* ===================== camera factory (pan & zoom) ===================== */
+  function createCamera(opts){
+    var viewportEl = opts.viewportEl, worldEl = opts.worldEl;
+    var worldW = opts.worldW, worldH = opts.worldH;
+    var minScale = opts.minScale || 0.5, maxScale = opts.maxScale || 2.2;
+    var tapSelector = opts.tapSelector, onTap = opts.onTap;
+    var hintEl = opts.hintEl;
+
+    var camera = { x:0, y:0, scale:1 };
+    var pointers = new Map();
+    var gesture = { mode:null, moved:false, lastX:0, lastY:0, startDist:0, startScale:1, midX:0, midY:0, downId:null };
+    var windowTrackingActive = false;
+
+    function dist(a,b){ return Math.hypot(a.x-b.x, a.y-b.y); }
+    function midpoint(a,b){ return { x:(a.x+b.x)/2, y:(a.y+b.y)/2 }; }
+
+    function clampCamera(){
+      var vw = viewportEl.clientWidth, vh = viewportEl.clientHeight;
+      var ww = worldW * camera.scale, wh = worldH * camera.scale;
+      var margin = 90;
+      var lowerX = Math.min(0, vw-ww)-margin, upperX = Math.max(0, vw-ww)+margin;
+      var lowerY = Math.min(0, vh-wh)-margin, upperY = Math.max(0, vh-wh)+margin;
+      camera.x = Math.max(lowerX, Math.min(upperX, camera.x));
+      camera.y = Math.max(lowerY, Math.min(upperY, camera.y));
+    }
+    function applyTransform(){
+      worldEl.style.transform = "translate(" + camera.x.toFixed(1) + "px," + camera.y.toFixed(1) + "px) scale(" + camera.scale.toFixed(4) + ")";
+    }
+    function centerCamera(){
+      var vw = viewportEl.clientWidth, vh = viewportEl.clientHeight;
+      if(vw === 0 || vh === 0) return;
+      var scale = Math.min(vw/worldW, vh/worldH) * 0.95;
+      camera.scale = Math.max(minScale, Math.min(maxScale, scale));
+      camera.x = (vw - worldW*camera.scale)/2;
+      camera.y = (vh - worldH*camera.scale)/2;
+      clampCamera();
+      applyTransform();
+    }
+    function centerOn(px, py){
+      var vw = viewportEl.clientWidth, vh = viewportEl.clientHeight;
+      camera.x = vw/2 - px*camera.scale;
+      camera.y = vh/2 - py*camera.scale;
+      clampCamera();
+      applyTransform();
+    }
+    function zoomTo(newScale, screenX, screenY){
+      newScale = Math.max(minScale, Math.min(maxScale, newScale));
+      var wx = (screenX - camera.x) / camera.scale;
+      var wy = (screenY - camera.y) / camera.scale;
+      camera.scale = newScale;
+      camera.x = screenX - wx*camera.scale;
+      camera.y = screenY - wy*camera.scale;
+      clampCamera();
+      applyTransform();
+    }
+    function hideHint(){ if(hintEl) hintEl.classList.add("hide"); }
+
+    function startWindowTracking(){
+      if(windowTrackingActive) return;
+      windowTrackingActive = true;
+      window.addEventListener("pointermove", onWindowPointerMove);
+      window.addEventListener("pointerup", onWindowPointerUp);
+      window.addEventListener("pointercancel", onWindowPointerUp);
+    }
+    function stopWindowTracking(){
+      windowTrackingActive = false;
+      window.removeEventListener("pointermove", onWindowPointerMove);
+      window.removeEventListener("pointerup", onWindowPointerUp);
+      window.removeEventListener("pointercancel", onWindowPointerUp);
+    }
+
+    viewportEl.addEventListener("pointerdown", function(e){
+      pointers.set(e.pointerId, { x:e.clientX, y:e.clientY });
+      if(pointers.size === 1){
+        gesture.mode = "pan";
+        gesture.moved = false;
+        gesture.lastX = e.clientX;
+        gesture.lastY = e.clientY;
+        var tapEl = (tapSelector && e.target.closest) ? e.target.closest(tapSelector) : null;
+        gesture.downId = tapEl ? tapEl.getAttribute("data-id") : null;
+        viewportEl.classList.add("grabbing");
+        startWindowTracking();
+      }else if(pointers.size === 2){
+        var pts = Array.from(pointers.values());
+        gesture.mode = "pinch";
+        gesture.moved = true;
+        gesture.downId = null;
+        gesture.startDist = dist(pts[0], pts[1]);
+        gesture.startScale = camera.scale;
+        var mid = midpoint(pts[0], pts[1]);
+        var rect = viewportEl.getBoundingClientRect();
+        gesture.midX = mid.x - rect.left;
+        gesture.midY = mid.y - rect.top;
+      }
+    });
+
+    function onWindowPointerMove(e){
+      if(!pointers.has(e.pointerId)) return;
+      pointers.set(e.pointerId, { x:e.clientX, y:e.clientY });
+      if(gesture.mode === "pan" && pointers.size === 1){
+        var dx = e.clientX - gesture.lastX;
+        var dy = e.clientY - gesture.lastY;
+        if(!gesture.moved && (Math.abs(dx)+Math.abs(dy) > 4)){ gesture.moved = true; hideHint(); }
+        if(gesture.moved){ camera.x += dx; camera.y += dy; clampCamera(); applyTransform(); }
+        gesture.lastX = e.clientX; gesture.lastY = e.clientY;
+      }else if(gesture.mode === "pinch" && pointers.size === 2){
+        var pts = Array.from(pointers.values());
+        var d = dist(pts[0], pts[1]);
+        var newScale = gesture.startScale * (d / (gesture.startDist || 1));
+        zoomTo(newScale, gesture.midX, gesture.midY);
+        hideHint();
+      }
+    }
+    function onWindowPointerUp(e){
+      if(!pointers.has(e.pointerId)) return;
+      pointers.delete(e.pointerId);
+      if(pointers.size === 1){
+        var remaining = Array.from(pointers.values())[0];
+        gesture.mode = "pan"; gesture.lastX = remaining.x; gesture.lastY = remaining.y; gesture.downId = null;
+      }else if(pointers.size === 0){
+        if(!gesture.moved && gesture.downId && onTap) onTap(gesture.downId);
+        gesture.mode = null; gesture.moved = false; gesture.downId = null;
+        viewportEl.classList.remove("grabbing");
+        stopWindowTracking();
+      }
+    }
+
+    viewportEl.addEventListener("wheel", function(e){
+      e.preventDefault();
+      hideHint();
+      var factor = e.deltaY < 0 ? 1.1 : 1/1.1;
+      var rect = viewportEl.getBoundingClientRect();
+      zoomTo(camera.scale * factor, e.clientX - rect.left, e.clientY - rect.top);
+    }, { passive:false });
+
+    window.addEventListener("resize", function(){ clampCamera(); applyTransform(); });
+
+    return {
+      camera: camera,
+      centerCamera: centerCamera,
+      centerOn: centerOn,
+      zoomIn: function(){ zoomTo(camera.scale*1.25, viewportEl.clientWidth/2, viewportEl.clientHeight/2); },
+      zoomOut: function(){ zoomTo(camera.scale/1.25, viewportEl.clientWidth/2, viewportEl.clientHeight/2); }
+    };
+  }
+
+  /* ===================== TU REINO (city view) ===================== */
   var STORAGE_KEY = "kb_state_v2";
   var UPGRADE_MULT = 1.3;
   var MAX_LEVEL = 30;
@@ -349,8 +766,6 @@
   var GRID_ROWS = 7;
   var WORLD_W = GRID_COLS * CELL;
   var WORLD_H = GRID_ROWS * CELL;
-  var MIN_SCALE = 0.55;
-  var MAX_SCALE = 2.2;
   var TICK_MS = 4000;
   var MAX_OFFLINE_SECONDS = 8 * 3600;
 
@@ -377,8 +792,6 @@
     { img:"assets/env/clay1.png",       col:2.4, row:4.0, size:40 }
   ];
 
-  var RES_ICON_ID = { gold:"icon-gold", wood:"icon-wood", stone:"icon-stone" };
-
   var DEFAULT_STATE = {
     resources:{ gold:1000, wood:800, stone:600 },
     buildings:{
@@ -390,7 +803,6 @@
     lastTick: Date.now()
   };
 
-  /* ===================== state ===================== */
   function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
 
   function loadState(){
@@ -401,28 +813,21 @@
       if(!parsed || !parsed.resources || !parsed.buildings) return clone(DEFAULT_STATE);
       if(typeof parsed.lastTick !== "number") parsed.lastTick = Date.now();
       return parsed;
-    }catch(e){
-      return clone(DEFAULT_STATE);
-    }
+    }catch(e){ return clone(DEFAULT_STATE); }
   }
-
-  function saveState(){
-    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
-  }
+  function saveState(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){} }
 
   var state = loadState();
   var selectedId = null;
   var buildingEls = {};
 
-  function fmt(n){ return Math.round(n).toLocaleString("es"); }
   function defFor(id){
     for(var i=0;i<BUILDING_DEFS.length;i++){ if(BUILDING_DEFS[i].id===id) return BUILDING_DEFS[i]; }
     return null;
   }
 
-  /* ===================== world building ===================== */
-  var worldEl = document.getElementById("world");
-  var viewportEl = document.getElementById("viewport");
+  var worldReinoEl = document.getElementById("world-reino");
+  var viewportReinoEl = document.getElementById("viewport-reino");
 
   function anchorStyle(el, col, row, sizePx, zBase){
     el.style.left = (col * CELL) + "px";
@@ -431,39 +836,35 @@
     el.style.zIndex = String(Math.round(row * 100) + zBase);
   }
 
-  function buildWorld(){
-    worldEl.style.width = WORLD_W + "px";
-    worldEl.style.height = WORLD_H + "px";
-    worldEl.style.backgroundSize = CELL + "px " + CELL + "px";
-    worldEl.innerHTML = "";
+  function buildReinoWorld(){
+    worldReinoEl.style.width = WORLD_W + "px";
+    worldReinoEl.style.height = WORLD_H + "px";
+    worldReinoEl.style.backgroundSize = CELL + "px " + CELL + "px";
+    worldReinoEl.innerHTML = "";
 
     var plaza = document.createElement("div");
     plaza.className = "plaza";
-    plaza.style.left = (2 * CELL) + "px";
-    plaza.style.top = (2 * CELL) + "px";
-    plaza.style.width = (3 * CELL) + "px";
-    plaza.style.height = (3 * CELL) + "px";
-    plaza.style.backgroundSize = (CELL/2) + "px " + (CELL/2) + "px";
-    worldEl.appendChild(plaza);
+    plaza.style.left = (2*CELL)+"px"; plaza.style.top = (2*CELL)+"px";
+    plaza.style.width = (3*CELL)+"px"; plaza.style.height = (3*CELL)+"px";
+    plaza.style.backgroundSize = (CELL/2)+"px "+(CELL/2)+"px";
+    worldReinoEl.appendChild(plaza);
 
     DECOR.forEach(function(d, i){
       var wrap = document.createElement("div");
       wrap.className = "thing bob";
-      wrap.style.animationDelay = (i * 0.18) + "s";
+      wrap.style.animationDelay = (i*0.18)+"s";
       anchorStyle(wrap, d.col, d.row, d.size, 1);
       var img = document.createElement("img");
-      img.src = d.img;
-      img.alt = "";
-      img.draggable = false;
+      img.src = d.img; img.alt = ""; img.draggable = false;
       wrap.appendChild(img);
-      worldEl.appendChild(wrap);
+      worldReinoEl.appendChild(wrap);
     });
 
     BUILDING_DEFS.forEach(function(def, i){
       var b = state.buildings[def.id];
       var wrap = document.createElement("div");
       wrap.className = "thing building bob";
-      wrap.style.animationDelay = (i * 0.22) + "s";
+      wrap.style.animationDelay = (i*0.22)+"s";
       wrap.setAttribute("data-id", def.id);
       wrap.setAttribute("role","button");
       wrap.setAttribute("tabindex","0");
@@ -471,13 +872,11 @@
 
       var label = document.createElement("div");
       label.className = "label";
-      label.id = "level-" + def.id;
-      label.textContent = "Nv. " + b.level;
+      label.id = "level-"+def.id;
+      label.textContent = "Nv. "+b.level;
 
       var img = document.createElement("img");
-      img.src = def.img;
-      img.alt = def.name;
-      img.draggable = false;
+      img.src = def.img; img.alt = def.name; img.draggable = false;
 
       wrap.appendChild(label);
       wrap.appendChild(img);
@@ -485,171 +884,21 @@
         if(e.key==="Enter" || e.key===" "){ e.preventDefault(); openSheet(def.id); }
       });
 
-      worldEl.appendChild(wrap);
+      worldReinoEl.appendChild(wrap);
       buildingEls[def.id] = wrap;
     });
   }
 
-  /* ===================== camera (pan & zoom) ===================== */
-  var camera = { x:0, y:0, scale:1 };
-  var pointers = new Map();
-  var gesture = { mode:null, moved:false, lastX:0, lastY:0, startDist:0, startScale:1, midX:0, midY:0, downBuildingId:null };
-
-  function clampCamera(){
-    var vw = viewportEl.clientWidth, vh = viewportEl.clientHeight;
-    var ww = WORLD_W * camera.scale, wh = WORLD_H * camera.scale;
-    var margin = 90;
-    var lowerX = Math.min(0, vw - ww) - margin, upperX = Math.max(0, vw - ww) + margin;
-    var lowerY = Math.min(0, vh - wh) - margin, upperY = Math.max(0, vh - wh) + margin;
-    camera.x = Math.max(lowerX, Math.min(upperX, camera.x));
-    camera.y = Math.max(lowerY, Math.min(upperY, camera.y));
-  }
-
-  function applyTransform(){
-    worldEl.style.transform = "translate(" + camera.x.toFixed(1) + "px," + camera.y.toFixed(1) + "px) scale(" + camera.scale.toFixed(4) + ")";
-  }
-
-  function centerCamera(){
-    var vw = viewportEl.clientWidth, vh = viewportEl.clientHeight;
-    var scale = Math.min(vw / WORLD_W, vh / WORLD_H) * 0.95;
-    camera.scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale));
-    camera.x = (vw - WORLD_W * camera.scale) / 2;
-    camera.y = (vh - WORLD_H * camera.scale) / 2;
-    clampCamera();
-    applyTransform();
-  }
-
-  function zoomTo(newScale, screenX, screenY){
-    newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScale));
-    var wx = (screenX - camera.x) / camera.scale;
-    var wy = (screenY - camera.y) / camera.scale;
-    camera.scale = newScale;
-    camera.x = screenX - wx * camera.scale;
-    camera.y = screenY - wy * camera.scale;
-    clampCamera();
-    applyTransform();
-  }
-
-  function dist(a, b){ return Math.hypot(a.x - b.x, a.y - b.y); }
-  function midpoint(a, b){ return { x:(a.x+b.x)/2, y:(a.y+b.y)/2 }; }
-
-  function hideHint(){
-    var hint = document.getElementById("hint");
-    if(hint) hint.classList.add("hide");
-  }
-
-  var windowTrackingActive = false;
-
-  function startWindowTracking(){
-    if(windowTrackingActive) return;
-    windowTrackingActive = true;
-    window.addEventListener("pointermove", onWindowPointerMove);
-    window.addEventListener("pointerup", onWindowPointerUp);
-    window.addEventListener("pointercancel", onWindowPointerUp);
-  }
-  function stopWindowTracking(){
-    windowTrackingActive = false;
-    window.removeEventListener("pointermove", onWindowPointerMove);
-    window.removeEventListener("pointerup", onWindowPointerUp);
-    window.removeEventListener("pointercancel", onWindowPointerUp);
-  }
-
-  viewportEl.addEventListener("pointerdown", function(e){
-    pointers.set(e.pointerId, { x:e.clientX, y:e.clientY });
-    if(pointers.size === 1){
-      gesture.mode = "pan";
-      gesture.moved = false;
-      gesture.lastX = e.clientX;
-      gesture.lastY = e.clientY;
-      var buildingEl = e.target.closest ? e.target.closest(".building") : null;
-      gesture.downBuildingId = buildingEl ? buildingEl.getAttribute("data-id") : null;
-      viewportEl.classList.add("grabbing");
-      startWindowTracking();
-    }else if(pointers.size === 2){
-      var pts = Array.from(pointers.values());
-      gesture.mode = "pinch";
-      gesture.moved = true;
-      gesture.downBuildingId = null;
-      gesture.startDist = dist(pts[0], pts[1]);
-      gesture.startScale = camera.scale;
-      var mid = midpoint(pts[0], pts[1]);
-      var rect = viewportEl.getBoundingClientRect();
-      gesture.midX = mid.x - rect.left;
-      gesture.midY = mid.y - rect.top;
-    }
+  var camReino = createCamera({
+    viewportEl: viewportReinoEl, worldEl: worldReinoEl,
+    worldW: WORLD_W, worldH: WORLD_H, minScale:0.55, maxScale:2.2,
+    tapSelector: ".building", onTap: function(id){ openSheet(id); },
+    hintEl: document.getElementById("hint-reino")
   });
+  document.getElementById("zoom-in-reino").addEventListener("click", camReino.zoomIn);
+  document.getElementById("zoom-out-reino").addEventListener("click", camReino.zoomOut);
+  document.getElementById("zoom-reset-reino").addEventListener("click", camReino.centerCamera);
 
-  function onWindowPointerMove(e){
-    if(!pointers.has(e.pointerId)) return;
-    pointers.set(e.pointerId, { x:e.clientX, y:e.clientY });
-
-    if(gesture.mode === "pan" && pointers.size === 1){
-      var dx = e.clientX - gesture.lastX;
-      var dy = e.clientY - gesture.lastY;
-      if(!gesture.moved && (Math.abs(dx) + Math.abs(dy) > 4)){
-        gesture.moved = true;
-        hideHint();
-      }
-      if(gesture.moved){
-        camera.x += dx;
-        camera.y += dy;
-        clampCamera();
-        applyTransform();
-      }
-      gesture.lastX = e.clientX;
-      gesture.lastY = e.clientY;
-    }else if(gesture.mode === "pinch" && pointers.size === 2){
-      var pts = Array.from(pointers.values());
-      var d = dist(pts[0], pts[1]);
-      var newScale = gesture.startScale * (d / (gesture.startDist || 1));
-      zoomTo(newScale, gesture.midX, gesture.midY);
-      hideHint();
-    }
-  }
-
-  function onWindowPointerUp(e){
-    if(!pointers.has(e.pointerId)) return;
-    pointers.delete(e.pointerId);
-    if(pointers.size === 1){
-      var remaining = Array.from(pointers.values())[0];
-      gesture.mode = "pan";
-      gesture.lastX = remaining.x;
-      gesture.lastY = remaining.y;
-      gesture.downBuildingId = null;
-    }else if(pointers.size === 0){
-      if(!gesture.moved && gesture.downBuildingId){
-        openSheet(gesture.downBuildingId);
-      }
-      gesture.mode = null;
-      gesture.moved = false;
-      gesture.downBuildingId = null;
-      viewportEl.classList.remove("grabbing");
-      stopWindowTracking();
-    }
-  }
-
-  viewportEl.addEventListener("wheel", function(e){
-    e.preventDefault();
-    hideHint();
-    var factor = e.deltaY < 0 ? 1.1 : 1/1.1;
-    var rect = viewportEl.getBoundingClientRect();
-    zoomTo(camera.scale * factor, e.clientX - rect.left, e.clientY - rect.top);
-  }, { passive:false });
-
-  document.getElementById("zoom-in").addEventListener("click", function(){
-    zoomTo(camera.scale * 1.25, viewportEl.clientWidth/2, viewportEl.clientHeight/2);
-  });
-  document.getElementById("zoom-out").addEventListener("click", function(){
-    zoomTo(camera.scale / 1.25, viewportEl.clientWidth/2, viewportEl.clientHeight/2);
-  });
-  document.getElementById("zoom-reset").addEventListener("click", centerCamera);
-
-  window.addEventListener("resize", function(){
-    clampCamera();
-    applyTransform();
-  });
-
-  /* ===================== fx ===================== */
   function spawnFloat(buildingEl, amount, resKey){
     var el = document.createElement("div");
     el.className = "fx-float " + (resKey === "gold" ? "gold" : "wood") + " fx-float-anim";
@@ -658,44 +907,38 @@
     el.addEventListener("animationend", function(){ el.remove(); });
     setTimeout(function(){ if(el.parentNode) el.remove(); }, 1800);
   }
-
   function spawnDust(buildingEl){
     for(var i=0;i<5;i++){
       var p = document.createElement("span");
       p.className = "dust";
-      var angle = (Math.PI * 2 * i)/5 + Math.random()*0.5;
+      var angle = (Math.PI*2*i)/5 + Math.random()*0.5;
       var d = 18 + Math.random()*10;
-      p.style.setProperty("--dx", (Math.cos(angle)*d).toFixed(1) + "px");
-      p.style.setProperty("--dy", (-Math.abs(Math.sin(angle))*d - 6).toFixed(1) + "px");
+      p.style.setProperty("--dx", (Math.cos(angle)*d).toFixed(1)+"px");
+      p.style.setProperty("--dy", (-Math.abs(Math.sin(angle))*d-6).toFixed(1)+"px");
       buildingEl.appendChild(p);
       (function(el){ setTimeout(function(){ if(el.parentNode) el.remove(); }, 650); })(p);
     }
   }
 
-  /* ===================== resources / render ===================== */
   function renderResources(pulseKeys){
     var amounts = state.resources;
-    document.getElementById("amt-gold").textContent  = fmt(amounts.gold);
-    document.getElementById("amt-wood").textContent   = fmt(amounts.wood);
-    document.getElementById("amt-stone").textContent  = fmt(amounts.stone);
+    document.getElementById("amt-gold").textContent = fmt(amounts.gold);
+    document.getElementById("amt-wood").textContent = fmt(amounts.wood);
+    document.getElementById("amt-stone").textContent = fmt(amounts.stone);
     if(pulseKeys){
       pulseKeys.forEach(function(key){
         var el = document.querySelector('.resource[data-res="'+key+'"]');
         if(!el) return;
-        el.classList.remove("pulse");
-        void el.offsetWidth;
-        el.classList.add("pulse");
+        el.classList.remove("pulse"); void el.offsetWidth; el.classList.add("pulse");
       });
     }
   }
-
   function refreshBuilding(id){
     var b = state.buildings[id];
-    var label = document.getElementById("level-" + id);
-    if(label) label.textContent = "Nv. " + b.level;
+    var label = document.getElementById("level-"+id);
+    if(label) label.textContent = "Nv. "+b.level;
   }
 
-  /* ===================== sheet ===================== */
   function openSheet(id){
     selectedId = id;
     renderSheet();
@@ -707,7 +950,6 @@
     document.getElementById("sheet-backdrop").classList.remove("show");
     selectedId = null;
   }
-
   function renderSheet(){
     if(!selectedId) return;
     var def = defFor(selectedId);
@@ -715,21 +957,17 @@
     var maxed = b.level >= MAX_LEVEL;
 
     var iconEl = document.getElementById("sheet-icon");
-    iconEl.src = def.img;
-    iconEl.alt = def.name;
+    iconEl.src = def.img; iconEl.alt = def.name;
     document.getElementById("sheet-name").textContent = def.name;
     document.getElementById("sheet-level").textContent = "Nivel " + b.level;
     document.getElementById("sheet-desc").textContent = def.desc;
 
     var prodEl = document.getElementById("sheet-prod");
     if(def.produces){
-      var perSec = def.produces.perLevelPerSec * b.level;
-      var perMin = Math.round(perSec * 60);
+      var perMin = Math.round(def.produces.perLevelPerSec * b.level * 60);
       prodEl.innerHTML = "Produce ~" + perMin + " " + (def.produces.res === "gold" ? "oro" : "madera") + " por minuto";
       prodEl.classList.add("show");
-    }else{
-      prodEl.classList.remove("show");
-    }
+    }else{ prodEl.classList.remove("show"); }
 
     var titleEl = document.getElementById("upgrade-title");
     var costRow = document.getElementById("cost-row");
@@ -745,7 +983,6 @@
     }
 
     titleEl.innerHTML = 'Mejorar a nivel <span>' + (b.level+1) + '</span>';
-
     var canAfford = true;
     costRow.innerHTML = "";
     ["gold","wood","stone"].forEach(function(key){
@@ -758,7 +995,6 @@
       chip.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#'+RES_ICON_ID[key]+'"/></svg> ' + fmt(need);
       costRow.appendChild(chip);
     });
-
     btn.className = "btn-upgrade";
     btn.disabled = !canAfford;
     btn.textContent = canAfford ? "Mejorar" : "Recursos insuficientes";
@@ -768,51 +1004,29 @@
     if(!selectedId) return;
     var b = state.buildings[selectedId];
     if(b.level >= MAX_LEVEL) return;
-
     var cost = b.cost;
-    var canAfford = state.resources.gold >= cost.gold &&
-                     state.resources.wood >= cost.wood &&
-                     state.resources.stone >= cost.stone;
-    if(!canAfford){
-      showToast("No tienes suficientes recursos para esta mejora.", "error");
-      return;
-    }
+    var canAfford = state.resources.gold >= cost.gold && state.resources.wood >= cost.wood && state.resources.stone >= cost.stone;
+    if(!canAfford){ showToast("No tienes suficientes recursos para esta mejora.", "error"); return; }
 
-    state.resources.gold  -= Math.round(cost.gold);
-    state.resources.wood  -= Math.round(cost.wood);
+    state.resources.gold -= Math.round(cost.gold);
+    state.resources.wood -= Math.round(cost.wood);
     state.resources.stone -= Math.round(cost.stone);
-
     b.level += 1;
-    b.cost = {
-      gold:  Math.round(cost.gold  * UPGRADE_MULT),
-      wood:  Math.round(cost.wood  * UPGRADE_MULT),
-      stone: Math.round(cost.stone * UPGRADE_MULT)
-    };
+    b.cost = { gold: Math.round(cost.gold*UPGRADE_MULT), wood: Math.round(cost.wood*UPGRADE_MULT), stone: Math.round(cost.stone*UPGRADE_MULT) };
 
     saveState();
     renderResources(["gold","wood","stone"]);
     refreshBuilding(selectedId);
     renderSheet();
+    syncPlayerDoc();
 
-    var label = document.getElementById("level-" + selectedId);
+    var label = document.getElementById("level-"+selectedId);
     if(label){ label.classList.remove("bump"); void label.offsetWidth; label.classList.add("bump"); }
     var el = buildingEls[selectedId];
-    if(el){
-      el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop");
-      spawnDust(el);
-    }
+    if(el){ el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop"); spawnDust(el); }
 
     var def = defFor(selectedId);
     showToast(def.name + " mejorado a nivel " + b.level + ".", "success");
-  }
-
-  var toastTimer = null;
-  function showToast(msg, kind, html){
-    var toast = document.getElementById("toast");
-    if(html){ toast.innerHTML = html; } else { toast.textContent = msg; }
-    toast.className = "toast show" + (kind ? " " + kind : "");
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(function(){ toast.classList.remove("show"); }, 3200);
   }
 
   function resetProgress(){
@@ -824,9 +1038,9 @@
     BUILDING_DEFS.forEach(function(def){ refreshBuilding(def.id); });
     closeSheet();
     showToast("Progreso reiniciado.", "success");
+    syncPlayerDoc();
   }
 
-  /* ===================== passive production ===================== */
   function applyProduction(seconds, opts){
     opts = opts || {};
     var earned = { gold:0, wood:0, stone:0 };
@@ -837,19 +1051,16 @@
       if(amount <= 0) return;
       earned[def.produces.res] += amount;
       state.resources[def.produces.res] += amount;
-      if(opts.showFx && buildingEls[def.id]){
-        spawnFloat(buildingEls[def.id], amount, def.produces.res);
-      }
+      if(opts.showFx && buildingEls[def.id]) spawnFloat(buildingEls[def.id], amount, def.produces.res);
     });
     return earned;
   }
-
   function runOfflineCatchUp(){
     var now = Date.now();
-    var elapsedSec = Math.max(0, (now - (state.lastTick || now)) / 1000);
+    var elapsedSec = Math.max(0, (now - (state.lastTick || now))/1000);
     elapsedSec = Math.min(elapsedSec, MAX_OFFLINE_SECONDS);
     state.lastTick = now;
-    if(elapsedSec < 20) { saveState(); return; }
+    if(elapsedSec < 20){ saveState(); return; }
     var earned = applyProduction(elapsedSec, { showFx:false });
     saveState();
     if(earned.gold > 0 || earned.wood > 0){
@@ -860,31 +1071,306 @@
       renderResources(["gold","wood"]);
     }
   }
-
   function startProductionLoop(){
     setInterval(function(){
-      var seconds = TICK_MS / 1000;
-      applyProduction(seconds, { showFx:true });
+      applyProduction(TICK_MS/1000, { showFx:true });
       state.lastTick = Date.now();
       saveState();
       renderResources(["gold","wood"]);
     }, TICK_MS);
   }
 
-  /* ===================== init ===================== */
   document.getElementById("sheet-close").addEventListener("click", closeSheet);
   document.getElementById("sheet-backdrop").addEventListener("click", closeSheet);
   document.getElementById("btn-upgrade").addEventListener("click", performUpgrade);
   document.getElementById("reset-link").addEventListener("click", resetProgress);
-  document.addEventListener("keydown", function(e){
-    if(e.key === "Escape") closeSheet();
+  document.addEventListener("keydown", function(e){ if(e.key === "Escape"){ closeSheet(); closePlayerSheet(); } });
+
+  /* ===================== tabs ===================== */
+  function setActiveTab(tab){
+    var isReino = tab === "reino";
+    document.getElementById("page-reino").hidden = !isReino;
+    document.getElementById("page-mapa").hidden = isReino;
+    document.getElementById("tab-reino").classList.toggle("active", isReino);
+    document.getElementById("tab-mapa").classList.toggle("active", !isReino);
+    if(!isReino){ focusMapa(); }
+  }
+  document.getElementById("tab-reino").addEventListener("click", function(){ setActiveTab("reino"); });
+  document.getElementById("tab-mapa").addEventListener("click", function(){ setActiveTab("mapa"); });
+
+  /* ===================== MAPA DEL MUNDO ===================== */
+  var MAP_CELL = 110;
+  var MAP_COLS = 16;
+  var MAP_ROWS = 16;
+  var MAP_W = MAP_COLS * MAP_CELL;
+  var MAP_H = MAP_ROWS * MAP_CELL;
+  var PRESENCE_MS = 45000;
+
+  var worldMapaEl = document.getElementById("world-mapa");
+  var viewportMapaEl = document.getElementById("viewport-mapa");
+  worldMapaEl.style.width = MAP_W + "px";
+  worldMapaEl.style.height = MAP_H + "px";
+  worldMapaEl.style.backgroundSize = MAP_CELL + "px " + MAP_CELL + "px";
+
+  var camMapa = createCamera({
+    viewportEl: viewportMapaEl, worldEl: worldMapaEl,
+    worldW: MAP_W, worldH: MAP_H, minScale:0.35, maxScale:2.4,
+    tapSelector: ".player-marker", onTap: function(id){ openPlayerSheet(id); },
+    hintEl: document.getElementById("hint-mapa")
+  });
+  document.getElementById("zoom-in-mapa").addEventListener("click", camMapa.zoomIn);
+  document.getElementById("zoom-out-mapa").addEventListener("click", camMapa.zoomOut);
+  document.getElementById("goto-self").addEventListener("click", function(){
+    if(myMapPos) camMapa.centerOn(myMapPos.x, myMapPos.y);
+  });
+  function focusMapa(){
+    camMapa.centerCamera();
+    if(myMapPos) camMapa.centerOn(myMapPos.x, myMapPos.y);
+  }
+
+  function hashString(str){
+    var h = 0;
+    for(var i=0;i<str.length;i++){ h = (h*31 + str.charCodeAt(i)) >>> 0; }
+    return h;
+  }
+  function positionFor(id){
+    var h = hashString(String(id));
+    var margin = 2;
+    var col = (h % (MAP_COLS - margin*2)) + margin;
+    var row = (Math.floor(h/97) % (MAP_ROWS - margin*2)) + margin;
+    return { col: col + 0.5, row: row + 0.5 };
+  }
+
+  var players = {}; // id -> { name, level, isSelf, isDemo, col, row }
+  var myPlayerId = null;
+  var myMapPos = null;
+
+  function getLocalPlayerId(){
+    var id = localStorage.getItem("kb_local_pid");
+    if(!id){
+      id = "local-" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+      localStorage.setItem("kb_local_pid", id);
+    }
+    return id;
+  }
+
+  var DEMO_PLAYERS = [
+    { id:"demo-1", name:"AldeaNorte", level:12 },
+    { id:"demo-2", name:"[LXS]Rey_Arth", level:25 },
+    { id:"demo-3", name:"Morgana", level:8 },
+    { id:"demo-4", name:"[vJC]Draven", level:19 }
+  ];
+
+  function renderPlayers(){
+    Object.keys(players).forEach(function(id){
+      var p = players[id];
+      var existing = worldMapaEl.querySelector('.player-marker[data-id="'+cssEscape(id)+'"]');
+      var pos = positionFor(id);
+      p.col = pos.col; p.row = pos.row;
+      if(id === myPlayerId){ myMapPos = { x: pos.col*MAP_CELL, y: pos.row*MAP_CELL }; }
+
+      var wrap = existing || document.createElement("div");
+      wrap.className = "thing player-marker bob" + (p.isSelf ? " self" : "") + (p.isDemo ? " demo" : "");
+      wrap.setAttribute("data-id", id);
+      wrap.setAttribute("role","button");
+      wrap.setAttribute("tabindex","0");
+      var sizePx = 68;
+      wrap.style.left = (pos.col*MAP_CELL)+"px";
+      wrap.style.top = (pos.row*MAP_CELL)+"px";
+      wrap.style.width = sizePx+"px";
+      wrap.style.zIndex = String(Math.round(pos.row*100) + 5);
+      wrap.innerHTML =
+        '<div class="label"><span class="pname">'+(p.isSelf?"Tú · ":"")+escapeHtml(p.name)+'</span><span class="plevel">Nv. '+p.level+'</span></div>' +
+        '<img src="assets/buildings/castillo.png" alt="" draggable="false">';
+      wrap.addEventListener("keydown", function(e){ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); openPlayerSheet(id); } });
+      if(!existing) worldMapaEl.appendChild(wrap);
+    });
+    // remove markers for players no longer present
+    Array.from(worldMapaEl.querySelectorAll(".player-marker")).forEach(function(el){
+      var id = el.getAttribute("data-id");
+      if(!players[id]) el.remove();
+    });
+  }
+
+  function cssEscape(s){ return String(s).replace(/[^a-zA-Z0-9_-]/g, "_"); }
+  function escapeHtml(s){
+    var d = document.createElement("div");
+    d.textContent = s == null ? "" : String(s);
+    return d.innerHTML;
+  }
+
+  function openPlayerSheet(id){
+    var p = players[id];
+    if(!p) return;
+    document.getElementById("player-sheet-name").textContent = p.name;
+    document.getElementById("player-sheet-sub").textContent = p.isSelf ? "Este eres tú" : (p.isDemo ? "Jugador de ejemplo" : "Jugador");
+    var body = document.getElementById("player-sheet-body");
+    body.innerHTML =
+      '<div class="player-stat-row"><span>Nivel de castillo</span><span>'+p.level+'</span></div>' +
+      (p.isDemo ? '<div class="player-stat-row"><span>Estado</span><span>Modo demostración</span></div>' : '');
+    document.getElementById("player-sheet").classList.add("show");
+    document.getElementById("player-sheet-backdrop").classList.add("show");
+  }
+  function closePlayerSheet(){
+    document.getElementById("player-sheet").classList.remove("show");
+    document.getElementById("player-sheet-backdrop").classList.remove("show");
+  }
+  document.getElementById("player-sheet-close").addEventListener("click", closePlayerSheet);
+  document.getElementById("player-sheet-backdrop").addEventListener("click", closePlayerSheet);
+
+  function getMyCastleLevel(){
+    return state.buildings.castle ? state.buildings.castle.level : 1;
+  }
+
+  function initDemoWorld(){
+    document.getElementById("demo-banner").hidden = false;
+    document.getElementById("chat-input").disabled = true;
+    document.getElementById("chat-send").disabled = true;
+    document.getElementById("chat-input").placeholder = "Chat desactivado en modo demostración";
+
+    myPlayerId = getLocalPlayerId();
+    players[myPlayerId] = { name: getPlayerName() || "Tú", level: getMyCastleLevel(), isSelf:true, isDemo:false };
+    DEMO_PLAYERS.forEach(function(d){ players[d.id] = { name:d.name, level:d.level, isSelf:false, isDemo:true }; });
+    renderPlayers();
+  }
+
+  function syncPlayerDoc(){
+    if(!FB_READY || !db || !currentUid) return;
+    db.collection("players").doc(currentUid).set({
+      name: getPlayerName() || "Jugador",
+      level: getMyCastleLevel(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge:true }).catch(function(e){ console.error("syncPlayerDoc failed", e); });
+  }
+
+  function initFirebaseWorld(){
+    document.getElementById("chat-input").disabled = false;
+    document.getElementById("chat-send").disabled = false;
+
+    auth.signInAnonymously().catch(function(e){
+      console.error("Anonymous sign-in failed", e);
+      showToast("No se pudo conectar al servidor. Revisa la configuración de Firebase.", "error");
+    });
+
+    auth.onAuthStateChanged(function(user){
+      if(!user) return;
+      currentUid = user.uid;
+      myPlayerId = currentUid;
+      syncPlayerDoc();
+      setInterval(syncPlayerDoc, PRESENCE_MS);
+
+      db.collection("players").onSnapshot(function(snapshot){
+        var seen = {};
+        snapshot.forEach(function(doc){
+          var data = doc.data();
+          seen[doc.id] = true;
+          players[doc.id] = {
+            name: data.name || "Jugador",
+            level: data.level || 1,
+            isSelf: doc.id === currentUid,
+            isDemo: false
+          };
+        });
+        Object.keys(players).forEach(function(id){ if(!seen[id]) delete players[id]; });
+        renderPlayers();
+        document.getElementById("conn-dot").hidden = false;
+      }, function(err){
+        console.error("players snapshot error", err);
+        showToast("Error al conectar con el mapa del mundo.", "error");
+      });
+
+      var chatMessages = document.getElementById("chat-messages");
+      var lastCount = 0;
+      db.collection("chat").orderBy("ts", "desc").limit(50).onSnapshot(function(snapshot){
+        var msgs = [];
+        snapshot.forEach(function(doc){ msgs.push(doc.data()); });
+        msgs.reverse();
+        chatMessages.innerHTML = "";
+        if(msgs.length === 0){
+          chatMessages.innerHTML = '<div class="chat-empty">Aún no hay mensajes.</div>';
+        }else{
+          msgs.forEach(function(m){
+            var row = document.createElement("div");
+            row.className = "chat-msg" + (m.uid === currentUid ? " own" : "");
+            row.innerHTML = '<span class="who">'+escapeHtml(m.name || "Jugador")+':</span><span class="txt">'+escapeHtml(m.text || "")+'</span>';
+            chatMessages.appendChild(row);
+          });
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        if(msgs.length > lastCount && !chatOpen){
+          var badge = document.getElementById("chat-badge");
+          badge.hidden = false;
+          badge.textContent = String(Math.min(99, (parseInt(badge.textContent||"0",10) + (msgs.length-lastCount))));
+        }
+        lastCount = msgs.length;
+      }, function(err){ console.error("chat snapshot error", err); });
+    });
+  }
+
+  function sendChatMessage(){
+    var input = document.getElementById("chat-input");
+    var text = input.value.trim();
+    if(!text || !FB_READY || !db || !currentUid) return;
+    input.value = "";
+    db.collection("chat").add({
+      uid: currentUid,
+      name: getPlayerName() || "Jugador",
+      text: text.slice(0, 240),
+      ts: firebase.firestore.FieldValue.serverTimestamp()
+    }).catch(function(e){ console.error("send chat failed", e); showToast("No se pudo enviar el mensaje.", "error"); });
+  }
+  document.getElementById("chat-send").addEventListener("click", sendChatMessage);
+  document.getElementById("chat-input").addEventListener("keydown", function(e){
+    if(e.key === "Enter"){ e.preventDefault(); sendChatMessage(); }
   });
 
-  buildWorld();
-  centerCamera();
+  var chatOpen = false;
+  function setChatOpen(open){
+    chatOpen = open;
+    document.getElementById("chat-panel").classList.toggle("open", open);
+    if(open){
+      var badge = document.getElementById("chat-badge");
+      badge.hidden = true; badge.textContent = "0";
+      var cm = document.getElementById("chat-messages");
+      cm.scrollTop = cm.scrollHeight;
+    }
+  }
+  document.getElementById("chat-toggle").addEventListener("click", function(){ setChatOpen(true); });
+  document.getElementById("chat-close").addEventListener("click", function(){ setChatOpen(false); });
+
+  /* ===================== player name ===================== */
+  var NAME_KEY = "kb_player_name";
+  function getPlayerName(){ return localStorage.getItem(NAME_KEY) || ""; }
+  function setPlayerName(name){ localStorage.setItem(NAME_KEY, name); }
+
+  function ensurePlayerName(cb){
+    var existing = getPlayerName();
+    if(existing){ cb(existing); return; }
+    var backdrop = document.getElementById("name-modal-backdrop");
+    var input = document.getElementById("name-input");
+    backdrop.hidden = false;
+    input.focus();
+    function confirmName(){
+      var val = input.value.trim();
+      if(!val){ input.focus(); return; }
+      setPlayerName(val);
+      backdrop.hidden = true;
+      cb(val);
+    }
+    document.getElementById("name-confirm").addEventListener("click", confirmName, { once:true });
+    input.addEventListener("keydown", function(e){ if(e.key === "Enter") confirmName(); });
+  }
+
+  /* ===================== init ===================== */
+  buildReinoWorld();
+  camReino.centerCamera();
   renderResources();
   runOfflineCatchUp();
   startProductionLoop();
+
+  ensurePlayerName(function(){
+    if(FB_READY){ initFirebaseWorld(); } else { initDemoWorld(); }
+  });
 })();
 </script>
 </body>
