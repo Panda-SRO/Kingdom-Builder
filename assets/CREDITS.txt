@@ -22,3 +22,7 @@ Files used here (renamed for clarity):
 - buildings/casa1.png       <- medievalStructure_09.png (decorative house)
 - buildings/casa2.png       <- medievalStructure_11.png (decorative house)
 - buildings/casa3.png       <- medievalStructure_17.png (decorative house)
+
+world/terrain-1.jpg
+AI-generated (Bing Image Creator), commissioned for this project as the
+backdrop of the "Mapa del Mundo" screen. Not from Kenney.

@@ -127,6 +127,12 @@
     background-image:url("assets/tiles/grass.png");
     background-repeat:repeat;
   }
+  #world-mapa{
+    background-image:url("assets/world/terrain-1.jpg");
+    background-repeat:no-repeat;
+    background-size:100% 100%;
+    background-position:center;
+  }
   .plaza{position:absolute;background-image:url("assets/tiles/plaza.png");background-repeat:repeat;z-index:0;opacity:0.92;}
   .thing{position:absolute;transform:translate(-50%,-100%);pointer-events:none;}
   .thing img{display:block;width:100%;height:auto;filter:drop-shadow(0 5px 4px rgba(0,0,0,0.35));}
@@ -1110,7 +1116,6 @@
   var viewportMapaEl = document.getElementById("viewport-mapa");
   worldMapaEl.style.width = MAP_W + "px";
   worldMapaEl.style.height = MAP_H + "px";
-  worldMapaEl.style.backgroundSize = MAP_CELL + "px " + MAP_CELL + "px";
 
   var camMapa = createCamera({
     viewportEl: viewportMapaEl, worldEl: worldMapaEl,
