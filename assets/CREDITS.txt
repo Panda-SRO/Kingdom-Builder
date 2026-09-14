@@ -18,3 +18,7 @@ Files used here (renamed for clarity):
 - env/clay1.png             <- medievalEnvironment_16.png
 - tiles/grass.png           <- medievalTile_57.png
 - tiles/farmland.png        <- medievalTile_45.png
+- tiles/plaza.png           <- medievalTile_07.png
+- buildings/casa1.png       <- medievalStructure_09.png (decorative house)
+- buildings/casa2.png       <- medievalStructure_11.png (decorative house)
+- buildings/casa3.png       <- medievalStructure_17.png (decorative house)

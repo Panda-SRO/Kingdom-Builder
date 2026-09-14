@@ -32,12 +32,7 @@
   html,body{height:100%;}
   body{
     margin:0;
-    background-color:#3f9450;
-    background-image:
-      radial-gradient(ellipse 1200px 500px at 50% 0%, rgba(0,0,0,0.28), transparent 60%),
-      url("assets/tiles/grass.png");
-    background-size:auto, 88px 88px;
-    background-repeat:no-repeat, repeat;
+    background:#171f16;
     color:var(--ink);
     font-family:var(--sans);
     -webkit-font-smoothing:antialiased;
@@ -53,7 +48,7 @@
 
   /* ---- topbar ---- */
   .topbar{
-    position:sticky;top:0;z-index:30;
+    position:sticky;top:0;z-index:100;
     display:flex;align-items:center;justify-content:space-between;gap:14px;
     padding:14px 16px;
     background:rgba(20,17,13,0.92);
@@ -67,6 +62,7 @@
 
   .resources{display:flex;gap:8px;}
   .resource{
+    position:relative;
     display:flex;align-items:center;gap:6px;
     background:var(--bg-panel);border:1px solid var(--line);border-radius:999px;
     padding:6px 12px 6px 8px;
@@ -79,71 +75,109 @@
   .resource[data-res="wood"] .res-amount{color:var(--res-wood);}
   .resource[data-res="stone"] .res-amount{color:var(--res-stone);}
 
-  /* ---- city ---- */
-  .city{position:relative;max-width:640px;margin:0 auto;padding:22px 16px 8px;}
-  .city-intro{margin-bottom:18px;position:relative;z-index:1;}
-  .city-intro h1{font-size:22px;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,0.45);}
-  .city-intro p{margin-top:6px;font-size:13.5px;color:rgba(255,255,255,0.85);text-shadow:0 1px 4px rgba(0,0,0,0.4);}
+  /* ---- page ---- */
+  .page{max-width:760px;margin:0 auto;padding:16px 16px 8px;}
+  .page-intro{margin-bottom:12px;}
+  .page-intro h1{font-size:20px;color:#fff;}
+  .page-intro p{margin-top:4px;font-size:13px;color:var(--muted);}
 
-  .scenery{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
-  .scenery img{position:absolute;filter:drop-shadow(0 6px 5px rgba(0,0,0,0.28));}
+  /* ---- world viewport (pan & zoom) ---- */
+  .world-viewport{
+    position:relative;
+    width:100%;
+    height:min(62vh, 560px);
+    min-height:380px;
+    overflow:hidden;
+    border-radius:18px;
+    border:1px solid var(--line);
+    box-shadow:0 14px 40px rgba(0,0,0,0.45), inset 0 0 0 1px rgba(0,0,0,0.3);
+    background:#2f7a3f;
+    touch-action:none;
+    cursor:grab;
+  }
+  .world-viewport.grabbing{cursor:grabbing;}
+  .world-viewport::after{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    box-shadow:inset 0 40px 50px -40px rgba(0,0,0,0.55), inset 0 -40px 50px -40px rgba(0,0,0,0.55);
+  }
+  .world{
+    position:absolute;top:0;left:0;
+    transform-origin:0 0;
+    will-change:transform;
+    background-image:url("assets/tiles/grass.png");
+    background-repeat:repeat;
+  }
+  .plaza{position:absolute;background-image:url("assets/tiles/plaza.png");background-repeat:repeat;z-index:0;opacity:0.92;}
+  .thing{position:absolute;transform:translate(-50%,-100%);pointer-events:none;}
+  .thing img{display:block;width:100%;height:auto;filter:drop-shadow(0 5px 4px rgba(0,0,0,0.35));}
+  .thing.bob{animation:bob 3s ease-in-out infinite;}
+  @keyframes bob{0%,100%{transform:translate(-50%,-100%) translateY(0);}50%{transform:translate(-50%,-100%) translateY(-4px);}}
 
-  .city-grid{
-    position:relative;z-index:1;
-    display:grid;grid-template-columns:1fr 1fr;gap:14px;
+  .building{pointer-events:auto;cursor:pointer;}
+  .building .label{
+    position:absolute;left:50%;bottom:calc(100% + 4px);transform:translateX(-50%);
+    display:flex;align-items:center;justify-content:center;
+    min-width:26px;height:19px;padding:0 7px;white-space:nowrap;
+    background:rgba(20,17,13,0.85);border:1px solid rgba(212,175,55,0.45);border-radius:999px;
+    color:var(--gold-bright);font-size:10.5px;font-weight:700;
   }
-  .plot{
-    position:relative;
-    background:linear-gradient(160deg, rgba(33,27,20,0.62) 0%, rgba(20,16,11,0.62) 100%);
-    backdrop-filter:blur(3px);
-    border:1px solid rgba(212,175,55,0.28);
-    border-radius:var(--radius);
-    padding:14px 10px 12px;
-    text-align:center;
-    cursor:pointer;
-    transition:transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+  .building .label.bump{animation:bump .4s ease;}
+  @keyframes bump{0%{transform:translateX(-50%) scale(1);}40%{transform:translateX(-50%) scale(1.3);}100%{transform:translateX(-50%) scale(1);}}
+  .building.pop img{animation:pop .45s ease;}
+  @keyframes pop{0%{transform:scale(1);}35%{transform:scale(1.16) translateY(-6px);}100%{transform:scale(1);}}
+
+  .fx-float{
+    position:absolute;left:50%;top:-6px;transform:translate(-50%,0);
+    display:flex;align-items:center;gap:3px;
+    font-size:12px;font-weight:800;white-space:nowrap;
+    pointer-events:none;z-index:999;
   }
-  .plot:hover{transform:translateY(-2px);border-color:rgba(212,175,55,0.55);box-shadow:0 10px 24px rgba(0,0,0,0.35);}
-  .plot:active{transform:translateY(0);}
-  .plot-art{
-    position:relative;
-    height:86px;
-    display:flex;align-items:flex-end;justify-content:center;
-    margin-bottom:6px;
+  .fx-float.gold{color:#ffe28a;text-shadow:0 1px 3px rgba(0,0,0,0.6);}
+  .fx-float.wood{color:#e7b785;text-shadow:0 1px 3px rgba(0,0,0,0.6);}
+  .fx-float .icon{width:12px;height:12px;}
+  .fx-float-anim{animation:floatUp 1.3s ease-out forwards;}
+  @keyframes floatUp{0%{opacity:0;transform:translate(-50%,0);}15%{opacity:1;}100%{opacity:0;transform:translate(-50%,-34px);}}
+
+  .dust{position:absolute;left:50%;bottom:6%;width:7px;height:7px;border-radius:50%;background:#d9c398;pointer-events:none;z-index:998;
+    animation:dustBurst .55s ease-out forwards;}
+  @keyframes dustBurst{0%{opacity:0.9;transform:translate(-50%,0) scale(1);}100%{opacity:0;transform:translate(calc(-50% + var(--dx)), var(--dy)) scale(0.4);}}
+
+  /* zoom controls */
+  .zoom-controls{position:absolute;right:10px;bottom:10px;z-index:20;display:flex;flex-direction:column;gap:8px;}
+  .zoom-btn{
+    width:36px;height:36px;border-radius:10px;
+    background:rgba(20,17,13,0.85);border:1px solid var(--line);color:var(--ink);
+    font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;
+    cursor:pointer;user-select:none;
   }
-  .plot-art::before{
-    content:"";
-    position:absolute;bottom:2px;left:50%;transform:translateX(-50%);
-    width:56%;height:14px;
-    background:radial-gradient(ellipse, rgba(0,0,0,0.42), transparent 72%);
+  .zoom-btn:active{transform:scale(0.94);}
+  .hint{
+    position:absolute;left:10px;bottom:10px;z-index:20;
+    background:rgba(20,17,13,0.7);border:1px solid var(--line);border-radius:8px;
+    padding:6px 10px;font-size:11px;color:var(--muted);pointer-events:none;
+    transition:opacity .4s ease;
   }
-  .plot-art img{
-    position:relative;z-index:1;
-    max-height:100%;max-width:100%;
-    filter:drop-shadow(0 5px 4px rgba(0,0,0,0.35));
+  .hint.hide{opacity:0;}
+
+  .footer-note{
+    max-width:760px;margin:16px auto 0;padding:0 16px;
+    display:flex;justify-content:center;
   }
-  .plot-name{font-family:var(--serif);font-size:14.5px;font-weight:600;color:var(--ink);}
-  .plot-level{
-    display:inline-flex;align-items:center;justify-content:center;
-    margin-top:8px;
-    min-width:30px;height:22px;padding:0 8px;
-    border-radius:999px;
-    background:rgba(212,175,55,0.16);
-    border:1px solid rgba(212,175,55,0.4);
-    color:var(--gold-bright);font-size:12px;font-weight:700;
+  .reset-link{
+    background:rgba(0,0,0,0.28);border:none;color:rgba(255,255,255,0.85);font-size:12px;
+    text-decoration:underline;cursor:pointer;padding:6px 10px;border-radius:6px;
   }
-  .plot-level.bump{animation:bump .4s ease;}
-  @keyframes bump{0%{transform:scale(1);}40%{transform:scale(1.25);}100%{transform:scale(1);}}
+  .reset-link:hover{color:var(--gold-bright);}
 
   /* ---- sheet ---- */
   .sheet-backdrop{
     position:fixed;inset:0;background:rgba(10,8,6,0.6);
-    opacity:0;pointer-events:none;transition:opacity .2s ease;z-index:40;
+    opacity:0;pointer-events:none;transition:opacity .2s ease;z-index:140;
   }
   .sheet-backdrop.show{opacity:1;pointer-events:auto;}
 
   .sheet{
-    position:fixed;left:0;right:0;bottom:0;z-index:50;
+    position:fixed;left:0;right:0;bottom:0;z-index:150;
     max-width:640px;margin:0 auto;
     background:var(--bg-panel);
     border:1px solid var(--line);
@@ -172,6 +206,8 @@
     cursor:pointer;font-size:14px;
   }
   .sheet-desc{margin-top:14px;font-size:13.5px;color:var(--muted);line-height:1.5;}
+  .sheet-prod{margin-top:10px;font-size:12.5px;color:var(--ok);font-weight:600;display:none;}
+  .sheet-prod.show{display:block;}
 
   .upgrade-box{
     margin-top:18px;background:var(--bg-panel-2);border:1px solid var(--line);
@@ -207,28 +243,15 @@
     position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(20px);
     background:var(--bg-panel-2);color:var(--ink);border:1px solid var(--line);
     padding:12px 20px;border-radius:10px;font-size:13.5px;font-weight:600;
-    box-shadow:0 10px 30px rgba(0,0,0,0.4);z-index:60;
+    box-shadow:0 10px 30px rgba(0,0,0,0.4);z-index:160;
     opacity:0;pointer-events:none;transition:opacity .25s ease, transform .25s ease;
     max-width:calc(100vw - 32px);text-align:center;
+    display:flex;align-items:center;gap:8px;justify-content:center;flex-wrap:wrap;
   }
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
   .toast.error{border-color:rgba(224,85,75,0.5);color:#ffb3ac;}
   .toast.success{border-color:rgba(90,169,108,0.5);color:#a9e0b6;}
-
-  .footer-note{
-    position:relative;z-index:1;
-    max-width:640px;margin:26px auto 0;padding:0 16px;
-    display:flex;justify-content:center;
-  }
-  .reset-link{
-    background:rgba(0,0,0,0.28);border:none;color:rgba(255,255,255,0.85);font-size:12px;
-    text-decoration:underline;cursor:pointer;padding:6px 10px;border-radius:6px;
-  }
-  .reset-link:hover{color:var(--gold-bright);}
-
-  @media (min-width:520px){
-    .city-grid{grid-template-columns:repeat(4,1fr);}
-  }
+  .toast .icon{width:14px;height:14px;}
 </style>
 </head>
 <body>
@@ -270,14 +293,22 @@
   </div>
 </header>
 
-<main class="city">
-  <div class="scenery" id="scenery" aria-hidden="true"></div>
-  <div class="city-intro">
+<div class="page">
+  <div class="page-intro">
     <h1>Tu reino</h1>
-    <p>Toca un edificio para ver su nivel y mejorarlo.</p>
+    <p>Arrastra para moverte por el mapa, pellizca o usa +/− para hacer zoom. Toca un edificio para mejorarlo.</p>
   </div>
-  <div class="city-grid" id="city-grid"></div>
-</main>
+
+  <div class="world-viewport" id="viewport">
+    <div class="world" id="world"></div>
+    <div class="zoom-controls">
+      <div class="zoom-btn" id="zoom-in" aria-label="Acercar">+</div>
+      <div class="zoom-btn" id="zoom-out" aria-label="Alejar">−</div>
+      <div class="zoom-btn" id="zoom-reset" aria-label="Centrar">⤢</div>
+    </div>
+    <div class="hint" id="hint">Arrastra · Zoom con +/−</div>
+  </div>
+</div>
 
 <div class="footer-note">
   <button class="reset-link" id="reset-link">Reiniciar progreso</button>
@@ -295,6 +326,7 @@
     <button class="sheet-close" id="sheet-close" aria-label="Cerrar">✕</button>
   </div>
   <p class="sheet-desc" id="sheet-desc"></p>
+  <p class="sheet-prod" id="sheet-prod"></p>
   <div class="upgrade-box">
     <div class="upgrade-title" id="upgrade-title"></div>
     <div class="cost-row" id="cost-row"></div>
@@ -308,24 +340,44 @@
 (function(){
   "use strict";
 
-  var STORAGE_KEY = "kb_state_v1";
+  /* ===================== config ===================== */
+  var STORAGE_KEY = "kb_state_v2";
   var UPGRADE_MULT = 1.3;
   var MAX_LEVEL = 30;
+  var CELL = 100;
+  var GRID_COLS = 7;
+  var GRID_ROWS = 7;
+  var WORLD_W = GRID_COLS * CELL;
+  var WORLD_H = GRID_ROWS * CELL;
+  var MIN_SCALE = 0.55;
+  var MAX_SCALE = 2.2;
+  var TICK_MS = 4000;
+  var MAX_OFFLINE_SECONDS = 8 * 3600;
 
   var BUILDING_DEFS = [
-    { id:"castle",   name:"Castillo",    img:"assets/buildings/castillo.png",    desc:"El corazón de tu reino. Mejorarlo desbloquea nuevas construcciones y mejoras.", baseCost:{gold:600, wood:400, stone:500} },
-    { id:"farm",     name:"Granja",      img:"assets/buildings/granja.png",      desc:"Produce oro para financiar tu reino.",                                          baseCost:{gold:150, wood:250, stone:100} },
-    { id:"sawmill",  name:"Aserradero",  img:"assets/buildings/aserradero.png",  desc:"Produce madera para tus construcciones.",                                       baseCost:{gold:120, wood:80,  stone:150} },
-    { id:"barracks", name:"Cuartel",     img:"assets/buildings/cuartel.png",     desc:"Entrena tropas para defender tu reino (próximamente).",                         baseCost:{gold:300, wood:200, stone:250} }
+    { id:"castle",   name:"Castillo",    img:"assets/buildings/castillo.png",    desc:"El corazón de tu reino. Mejorarlo desbloquea nuevas construcciones y mejoras.", baseCost:{gold:600, wood:400, stone:500}, col:3.5, row:3.3, size:150 },
+    { id:"farm",     name:"Granja",      img:"assets/buildings/granja.png",      desc:"Produce oro para financiar tu reino, incluso mientras no estás jugando.",       baseCost:{gold:150, wood:250, stone:100}, col:1.5, row:2.1, size:112, produces:{res:"gold", perLevelPerSec:0.5} },
+    { id:"sawmill",  name:"Aserradero",  img:"assets/buildings/aserradero.png",  desc:"Produce madera para tus construcciones, incluso mientras no estás jugando.",    baseCost:{gold:120, wood:80,  stone:150}, col:5.2, row:2.0, size:112, produces:{res:"wood", perLevelPerSec:0.35} },
+    { id:"barracks", name:"Cuartel",     img:"assets/buildings/cuartel.png",     desc:"Entrena tropas para defender tu reino (próximamente).",                         baseCost:{gold:300, wood:200, stone:250}, col:3.4, row:5.3, size:112 }
   ];
 
-  var SCENERY = [
-    { src:"assets/env/tree1.png", top:"24%", left:"2%",  size:"44px" },
-    { src:"assets/env/tree2.png", top:"18%", left:"89%", size:"38px" },
-    { src:"assets/env/rock1.png", top:"52%", left:"92%", size:"32px" },
-    { src:"assets/env/tree3.png", top:"58%", left:"1%",  size:"40px" },
-    { src:"assets/env/rock2.png", top:"88%", left:"90%", size:"30px" }
+  var DECOR = [
+    { img:"assets/buildings/casa1.png", col:1.3, row:5.4, size:82 },
+    { img:"assets/buildings/casa2.png", col:5.4, row:5.5, size:82 },
+    { img:"assets/buildings/casa3.png", col:1.1, row:0.9, size:76 },
+    { img:"assets/buildings/casa3.png", col:5.5, row:0.8, size:76 },
+    { img:"assets/env/tree1.png",       col:0.3, row:0.4, size:64 },
+    { img:"assets/env/tree2.png",       col:6.4, row:0.5, size:58 },
+    { img:"assets/env/tree1.png",       col:0.2, row:6.2, size:60 },
+    { img:"assets/env/tree3.png",       col:6.5, row:6.1, size:62 },
+    { img:"assets/env/tree2.png",       col:3.3, row:0.2, size:54 },
+    { img:"assets/env/tree3.png",       col:3.1, row:6.4, size:56 },
+    { img:"assets/env/rock1.png",       col:1.1, row:3.7, size:46 },
+    { img:"assets/env/rock2.png",       col:5.5, row:3.6, size:44 },
+    { img:"assets/env/clay1.png",       col:2.4, row:4.0, size:40 }
   ];
+
+  var RES_ICON_ID = { gold:"icon-gold", wood:"icon-wood", stone:"icon-stone" };
 
   var DEFAULT_STATE = {
     resources:{ gold:1000, wood:800, stone:600 },
@@ -334,8 +386,12 @@
       farm:     { level:3, cost:{gold:150, wood:250, stone:100} },
       sawmill:  { level:2, cost:{gold:120, wood:80,  stone:150} },
       barracks: { level:4, cost:{gold:300, wood:200, stone:250} }
-    }
+    },
+    lastTick: Date.now()
   };
+
+  /* ===================== state ===================== */
+  function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
 
   function loadState(){
     try{
@@ -343,13 +399,12 @@
       if(!raw) return clone(DEFAULT_STATE);
       var parsed = JSON.parse(raw);
       if(!parsed || !parsed.resources || !parsed.buildings) return clone(DEFAULT_STATE);
+      if(typeof parsed.lastTick !== "number") parsed.lastTick = Date.now();
       return parsed;
     }catch(e){
       return clone(DEFAULT_STATE);
     }
   }
-
-  function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
 
   function saveState(){
     try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
@@ -357,28 +412,267 @@
 
   var state = loadState();
   var selectedId = null;
+  var buildingEls = {};
 
   function fmt(n){ return Math.round(n).toLocaleString("es"); }
-
   function defFor(id){
     for(var i=0;i<BUILDING_DEFS.length;i++){ if(BUILDING_DEFS[i].id===id) return BUILDING_DEFS[i]; }
     return null;
   }
 
-  function renderScenery(){
-    var layer = document.getElementById("scenery");
-    layer.innerHTML = "";
-    SCENERY.forEach(function(item){
+  /* ===================== world building ===================== */
+  var worldEl = document.getElementById("world");
+  var viewportEl = document.getElementById("viewport");
+
+  function anchorStyle(el, col, row, sizePx, zBase){
+    el.style.left = (col * CELL) + "px";
+    el.style.top = (row * CELL) + "px";
+    el.style.width = sizePx + "px";
+    el.style.zIndex = String(Math.round(row * 100) + zBase);
+  }
+
+  function buildWorld(){
+    worldEl.style.width = WORLD_W + "px";
+    worldEl.style.height = WORLD_H + "px";
+    worldEl.style.backgroundSize = CELL + "px " + CELL + "px";
+    worldEl.innerHTML = "";
+
+    var plaza = document.createElement("div");
+    plaza.className = "plaza";
+    plaza.style.left = (2 * CELL) + "px";
+    plaza.style.top = (2 * CELL) + "px";
+    plaza.style.width = (3 * CELL) + "px";
+    plaza.style.height = (3 * CELL) + "px";
+    plaza.style.backgroundSize = (CELL/2) + "px " + (CELL/2) + "px";
+    worldEl.appendChild(plaza);
+
+    DECOR.forEach(function(d, i){
+      var wrap = document.createElement("div");
+      wrap.className = "thing bob";
+      wrap.style.animationDelay = (i * 0.18) + "s";
+      anchorStyle(wrap, d.col, d.row, d.size, 1);
       var img = document.createElement("img");
-      img.src = item.src;
+      img.src = d.img;
       img.alt = "";
-      img.style.top = item.top;
-      img.style.left = item.left;
-      img.style.width = item.size;
-      layer.appendChild(img);
+      img.draggable = false;
+      wrap.appendChild(img);
+      worldEl.appendChild(wrap);
+    });
+
+    BUILDING_DEFS.forEach(function(def, i){
+      var b = state.buildings[def.id];
+      var wrap = document.createElement("div");
+      wrap.className = "thing building bob";
+      wrap.style.animationDelay = (i * 0.22) + "s";
+      wrap.setAttribute("data-id", def.id);
+      wrap.setAttribute("role","button");
+      wrap.setAttribute("tabindex","0");
+      anchorStyle(wrap, def.col, def.row, def.size, 2);
+
+      var label = document.createElement("div");
+      label.className = "label";
+      label.id = "level-" + def.id;
+      label.textContent = "Nv. " + b.level;
+
+      var img = document.createElement("img");
+      img.src = def.img;
+      img.alt = def.name;
+      img.draggable = false;
+
+      wrap.appendChild(label);
+      wrap.appendChild(img);
+      wrap.addEventListener("keydown", function(e){
+        if(e.key==="Enter" || e.key===" "){ e.preventDefault(); openSheet(def.id); }
+      });
+
+      worldEl.appendChild(wrap);
+      buildingEls[def.id] = wrap;
     });
   }
 
+  /* ===================== camera (pan & zoom) ===================== */
+  var camera = { x:0, y:0, scale:1 };
+  var pointers = new Map();
+  var gesture = { mode:null, moved:false, lastX:0, lastY:0, startDist:0, startScale:1, midX:0, midY:0, downBuildingId:null };
+
+  function clampCamera(){
+    var vw = viewportEl.clientWidth, vh = viewportEl.clientHeight;
+    var ww = WORLD_W * camera.scale, wh = WORLD_H * camera.scale;
+    var margin = 90;
+    var lowerX = Math.min(0, vw - ww) - margin, upperX = Math.max(0, vw - ww) + margin;
+    var lowerY = Math.min(0, vh - wh) - margin, upperY = Math.max(0, vh - wh) + margin;
+    camera.x = Math.max(lowerX, Math.min(upperX, camera.x));
+    camera.y = Math.max(lowerY, Math.min(upperY, camera.y));
+  }
+
+  function applyTransform(){
+    worldEl.style.transform = "translate(" + camera.x.toFixed(1) + "px," + camera.y.toFixed(1) + "px) scale(" + camera.scale.toFixed(4) + ")";
+  }
+
+  function centerCamera(){
+    var vw = viewportEl.clientWidth, vh = viewportEl.clientHeight;
+    var scale = Math.min(vw / WORLD_W, vh / WORLD_H) * 0.95;
+    camera.scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale));
+    camera.x = (vw - WORLD_W * camera.scale) / 2;
+    camera.y = (vh - WORLD_H * camera.scale) / 2;
+    clampCamera();
+    applyTransform();
+  }
+
+  function zoomTo(newScale, screenX, screenY){
+    newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScale));
+    var wx = (screenX - camera.x) / camera.scale;
+    var wy = (screenY - camera.y) / camera.scale;
+    camera.scale = newScale;
+    camera.x = screenX - wx * camera.scale;
+    camera.y = screenY - wy * camera.scale;
+    clampCamera();
+    applyTransform();
+  }
+
+  function dist(a, b){ return Math.hypot(a.x - b.x, a.y - b.y); }
+  function midpoint(a, b){ return { x:(a.x+b.x)/2, y:(a.y+b.y)/2 }; }
+
+  function hideHint(){
+    var hint = document.getElementById("hint");
+    if(hint) hint.classList.add("hide");
+  }
+
+  var windowTrackingActive = false;
+
+  function startWindowTracking(){
+    if(windowTrackingActive) return;
+    windowTrackingActive = true;
+    window.addEventListener("pointermove", onWindowPointerMove);
+    window.addEventListener("pointerup", onWindowPointerUp);
+    window.addEventListener("pointercancel", onWindowPointerUp);
+  }
+  function stopWindowTracking(){
+    windowTrackingActive = false;
+    window.removeEventListener("pointermove", onWindowPointerMove);
+    window.removeEventListener("pointerup", onWindowPointerUp);
+    window.removeEventListener("pointercancel", onWindowPointerUp);
+  }
+
+  viewportEl.addEventListener("pointerdown", function(e){
+    pointers.set(e.pointerId, { x:e.clientX, y:e.clientY });
+    if(pointers.size === 1){
+      gesture.mode = "pan";
+      gesture.moved = false;
+      gesture.lastX = e.clientX;
+      gesture.lastY = e.clientY;
+      var buildingEl = e.target.closest ? e.target.closest(".building") : null;
+      gesture.downBuildingId = buildingEl ? buildingEl.getAttribute("data-id") : null;
+      viewportEl.classList.add("grabbing");
+      startWindowTracking();
+    }else if(pointers.size === 2){
+      var pts = Array.from(pointers.values());
+      gesture.mode = "pinch";
+      gesture.moved = true;
+      gesture.downBuildingId = null;
+      gesture.startDist = dist(pts[0], pts[1]);
+      gesture.startScale = camera.scale;
+      var mid = midpoint(pts[0], pts[1]);
+      var rect = viewportEl.getBoundingClientRect();
+      gesture.midX = mid.x - rect.left;
+      gesture.midY = mid.y - rect.top;
+    }
+  });
+
+  function onWindowPointerMove(e){
+    if(!pointers.has(e.pointerId)) return;
+    pointers.set(e.pointerId, { x:e.clientX, y:e.clientY });
+
+    if(gesture.mode === "pan" && pointers.size === 1){
+      var dx = e.clientX - gesture.lastX;
+      var dy = e.clientY - gesture.lastY;
+      if(!gesture.moved && (Math.abs(dx) + Math.abs(dy) > 4)){
+        gesture.moved = true;
+        hideHint();
+      }
+      if(gesture.moved){
+        camera.x += dx;
+        camera.y += dy;
+        clampCamera();
+        applyTransform();
+      }
+      gesture.lastX = e.clientX;
+      gesture.lastY = e.clientY;
+    }else if(gesture.mode === "pinch" && pointers.size === 2){
+      var pts = Array.from(pointers.values());
+      var d = dist(pts[0], pts[1]);
+      var newScale = gesture.startScale * (d / (gesture.startDist || 1));
+      zoomTo(newScale, gesture.midX, gesture.midY);
+      hideHint();
+    }
+  }
+
+  function onWindowPointerUp(e){
+    if(!pointers.has(e.pointerId)) return;
+    pointers.delete(e.pointerId);
+    if(pointers.size === 1){
+      var remaining = Array.from(pointers.values())[0];
+      gesture.mode = "pan";
+      gesture.lastX = remaining.x;
+      gesture.lastY = remaining.y;
+      gesture.downBuildingId = null;
+    }else if(pointers.size === 0){
+      if(!gesture.moved && gesture.downBuildingId){
+        openSheet(gesture.downBuildingId);
+      }
+      gesture.mode = null;
+      gesture.moved = false;
+      gesture.downBuildingId = null;
+      viewportEl.classList.remove("grabbing");
+      stopWindowTracking();
+    }
+  }
+
+  viewportEl.addEventListener("wheel", function(e){
+    e.preventDefault();
+    hideHint();
+    var factor = e.deltaY < 0 ? 1.1 : 1/1.1;
+    var rect = viewportEl.getBoundingClientRect();
+    zoomTo(camera.scale * factor, e.clientX - rect.left, e.clientY - rect.top);
+  }, { passive:false });
+
+  document.getElementById("zoom-in").addEventListener("click", function(){
+    zoomTo(camera.scale * 1.25, viewportEl.clientWidth/2, viewportEl.clientHeight/2);
+  });
+  document.getElementById("zoom-out").addEventListener("click", function(){
+    zoomTo(camera.scale / 1.25, viewportEl.clientWidth/2, viewportEl.clientHeight/2);
+  });
+  document.getElementById("zoom-reset").addEventListener("click", centerCamera);
+
+  window.addEventListener("resize", function(){
+    clampCamera();
+    applyTransform();
+  });
+
+  /* ===================== fx ===================== */
+  function spawnFloat(buildingEl, amount, resKey){
+    var el = document.createElement("div");
+    el.className = "fx-float " + (resKey === "gold" ? "gold" : "wood") + " fx-float-anim";
+    el.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#' + RES_ICON_ID[resKey] + '"/></svg>+' + amount;
+    buildingEl.appendChild(el);
+    el.addEventListener("animationend", function(){ el.remove(); });
+    setTimeout(function(){ if(el.parentNode) el.remove(); }, 1800);
+  }
+
+  function spawnDust(buildingEl){
+    for(var i=0;i<5;i++){
+      var p = document.createElement("span");
+      p.className = "dust";
+      var angle = (Math.PI * 2 * i)/5 + Math.random()*0.5;
+      var d = 18 + Math.random()*10;
+      p.style.setProperty("--dx", (Math.cos(angle)*d).toFixed(1) + "px");
+      p.style.setProperty("--dy", (-Math.abs(Math.sin(angle))*d - 6).toFixed(1) + "px");
+      buildingEl.appendChild(p);
+      (function(el){ setTimeout(function(){ if(el.parentNode) el.remove(); }, 650); })(p);
+    }
+  }
+
+  /* ===================== resources / render ===================== */
   function renderResources(pulseKeys){
     var amounts = state.resources;
     document.getElementById("amt-gold").textContent  = fmt(amounts.gold);
@@ -395,35 +689,19 @@
     }
   }
 
-  function renderCityGrid(){
-    var grid = document.getElementById("city-grid");
-    grid.innerHTML = "";
-    BUILDING_DEFS.forEach(function(def){
-      var b = state.buildings[def.id];
-      var plot = document.createElement("div");
-      plot.className = "plot";
-      plot.setAttribute("data-id", def.id);
-      plot.setAttribute("role","button");
-      plot.setAttribute("tabindex","0");
-      plot.innerHTML =
-        '<div class="plot-art"><img src="'+def.img+'" alt="'+def.name+'"></div>' +
-        '<div class="plot-name">'+def.name+'</div>' +
-        '<div class="plot-level" id="level-'+def.id+'">Nv. '+b.level+'</div>';
-      plot.addEventListener("click", function(){ openSheet(def.id); });
-      plot.addEventListener("keydown", function(e){
-        if(e.key==="Enter" || e.key===" "){ e.preventDefault(); openSheet(def.id); }
-      });
-      grid.appendChild(plot);
-    });
+  function refreshBuilding(id){
+    var b = state.buildings[id];
+    var label = document.getElementById("level-" + id);
+    if(label) label.textContent = "Nv. " + b.level;
   }
 
+  /* ===================== sheet ===================== */
   function openSheet(id){
     selectedId = id;
     renderSheet();
     document.getElementById("sheet").classList.add("show");
     document.getElementById("sheet-backdrop").classList.add("show");
   }
-
   function closeSheet(){
     document.getElementById("sheet").classList.remove("show");
     document.getElementById("sheet-backdrop").classList.remove("show");
@@ -443,6 +721,16 @@
     document.getElementById("sheet-level").textContent = "Nivel " + b.level;
     document.getElementById("sheet-desc").textContent = def.desc;
 
+    var prodEl = document.getElementById("sheet-prod");
+    if(def.produces){
+      var perSec = def.produces.perLevelPerSec * b.level;
+      var perMin = Math.round(perSec * 60);
+      prodEl.innerHTML = "Produce ~" + perMin + " " + (def.produces.res === "gold" ? "oro" : "madera") + " por minuto";
+      prodEl.classList.add("show");
+    }else{
+      prodEl.classList.remove("show");
+    }
+
     var titleEl = document.getElementById("upgrade-title");
     var costRow = document.getElementById("cost-row");
     var btn = document.getElementById("btn-upgrade");
@@ -458,7 +746,6 @@
 
     titleEl.innerHTML = 'Mejorar a nivel <span>' + (b.level+1) + '</span>';
 
-    var resIconIds = { gold:"icon-gold", wood:"icon-wood", stone:"icon-stone" };
     var canAfford = true;
     costRow.innerHTML = "";
     ["gold","wood","stone"].forEach(function(key){
@@ -468,7 +755,7 @@
       if(insufficient) canAfford = false;
       var chip = document.createElement("div");
       chip.className = "cost-chip" + (insufficient ? " insufficient" : "");
-      chip.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#'+resIconIds[key]+'"/></svg> ' + fmt(need);
+      chip.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#'+RES_ICON_ID[key]+'"/></svg> ' + fmt(need);
       costRow.appendChild(chip);
     });
 
@@ -504,14 +791,15 @@
 
     saveState();
     renderResources(["gold","wood","stone"]);
-    renderCityGrid();
+    refreshBuilding(selectedId);
     renderSheet();
 
-    var levelBadge = document.getElementById("level-"+selectedId);
-    if(levelBadge){
-      levelBadge.classList.remove("bump");
-      void levelBadge.offsetWidth;
-      levelBadge.classList.add("bump");
+    var label = document.getElementById("level-" + selectedId);
+    if(label){ label.classList.remove("bump"); void label.offsetWidth; label.classList.add("bump"); }
+    var el = buildingEls[selectedId];
+    if(el){
+      el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop");
+      spawnDust(el);
     }
 
     var def = defFor(selectedId);
@@ -519,26 +807,71 @@
   }
 
   var toastTimer = null;
-  function showToast(msg, kind){
+  function showToast(msg, kind, html){
     var toast = document.getElementById("toast");
-    toast.textContent = msg;
+    if(html){ toast.innerHTML = html; } else { toast.textContent = msg; }
     toast.className = "toast show" + (kind ? " " + kind : "");
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(function(){
-      toast.classList.remove("show");
-    }, 2400);
+    toastTimer = setTimeout(function(){ toast.classList.remove("show"); }, 3200);
   }
 
   function resetProgress(){
     if(!confirm("¿Reiniciar todo el progreso del reino?")) return;
     state = clone(DEFAULT_STATE);
+    state.lastTick = Date.now();
     saveState();
     renderResources();
-    renderCityGrid();
+    BUILDING_DEFS.forEach(function(def){ refreshBuilding(def.id); });
     closeSheet();
     showToast("Progreso reiniciado.", "success");
   }
 
+  /* ===================== passive production ===================== */
+  function applyProduction(seconds, opts){
+    opts = opts || {};
+    var earned = { gold:0, wood:0, stone:0 };
+    BUILDING_DEFS.forEach(function(def){
+      if(!def.produces) return;
+      var b = state.buildings[def.id];
+      var amount = Math.round(def.produces.perLevelPerSec * b.level * seconds);
+      if(amount <= 0) return;
+      earned[def.produces.res] += amount;
+      state.resources[def.produces.res] += amount;
+      if(opts.showFx && buildingEls[def.id]){
+        spawnFloat(buildingEls[def.id], amount, def.produces.res);
+      }
+    });
+    return earned;
+  }
+
+  function runOfflineCatchUp(){
+    var now = Date.now();
+    var elapsedSec = Math.max(0, (now - (state.lastTick || now)) / 1000);
+    elapsedSec = Math.min(elapsedSec, MAX_OFFLINE_SECONDS);
+    state.lastTick = now;
+    if(elapsedSec < 20) { saveState(); return; }
+    var earned = applyProduction(elapsedSec, { showFx:false });
+    saveState();
+    if(earned.gold > 0 || earned.wood > 0){
+      var parts = [];
+      if(earned.gold > 0) parts.push('<svg class="icon" aria-hidden="true"><use href="#icon-gold"/></svg> +' + fmt(earned.gold));
+      if(earned.wood > 0) parts.push('<svg class="icon" aria-hidden="true"><use href="#icon-wood"/></svg> +' + fmt(earned.wood));
+      showToast("", "success", "Mientras no jugabas: " + parts.join(" &nbsp; "));
+      renderResources(["gold","wood"]);
+    }
+  }
+
+  function startProductionLoop(){
+    setInterval(function(){
+      var seconds = TICK_MS / 1000;
+      applyProduction(seconds, { showFx:true });
+      state.lastTick = Date.now();
+      saveState();
+      renderResources(["gold","wood"]);
+    }, TICK_MS);
+  }
+
+  /* ===================== init ===================== */
   document.getElementById("sheet-close").addEventListener("click", closeSheet);
   document.getElementById("sheet-backdrop").addEventListener("click", closeSheet);
   document.getElementById("btn-upgrade").addEventListener("click", performUpgrade);
@@ -547,9 +880,11 @@
     if(e.key === "Escape") closeSheet();
   });
 
-  renderScenery();
+  buildWorld();
+  centerCamera();
   renderResources();
-  renderCityGrid();
+  runOfflineCatchUp();
+  startProductionLoop();
 })();
 </script>
 </body>
