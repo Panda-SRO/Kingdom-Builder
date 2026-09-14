@@ -1,6 +1,6 @@
 # Kingdom Builder
 
-Prototipo web de un juego de estrategia de construcción de base (estilo Lord Mobile / Clash of Clans / Rise of Kingdoms en mecánica — sin copiar arte ni nombres). Proyecto original, en fase temprana de prototipo jugable.
+Prototipo web de un juego de estrategia de construcción de base (estilo / Castillos en mecánica — sin copiar arte ni nombres). Proyecto original, en fase temprana de prototipo jugable.
 
 ## Cómo probarlo
 
